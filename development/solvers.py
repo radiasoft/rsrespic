@@ -10,9 +10,6 @@ from numpy import exp, sin, einsum
 pi = np.pi
 
 
-def sinc(x):
-	return sin(x)/x
-
 class field_solver_2D(object):
 	""" Class for computing analytic solutions to fields and potentials 
 	for a cylidrical gaussian besm""" 
@@ -22,8 +19,8 @@ class field_solver_2D(object):
 		""" Input data from the user for the field solver """
 		self.lambda_y_0 = lambda_y_0
 		self.lambda_x_0 = lambda_x_0
-		self.n_modes_y = n_modes_y * 2. + 1
-		self.n_modes_x = n_modes_x * 2. + 1
+		self.n_modes_y = n_modes_y * 2 + 1
+		self.n_modes_x = n_modes_x * 2 + 1
 
 		""" Compute the k_vectors needed to build the k-matrix"""
 		self.k_x_vector = np.linspace(- n_modes_x, n_modes_x, self.n_modes_x ) * 2.0 * pi / self.lambda_x_0
@@ -46,7 +43,7 @@ class field_solver_2D(object):
 		ky4 = np.einsum('m,n,p -> mnp', np.ones(self.n_modes_x),self.k_y_vector, particles.y)
 		exponential_arg = kx4 + ky4		
 		
-		ptcl_exponential = exp(1j * exponential_arg)
+		ptcl_exponential = exp(1j * exponential_arg) * self.f_sigma(kx4, ky4, particles)
 
 		phi = einsum('xyp, xy, p -> xy', ptcl_exponential, self.k_sq_inv, particles.charge)
 
@@ -90,10 +87,10 @@ class field_solver_2D(object):
 
 	def f_sigma(self, k_x, k_y, particles):
 
-		arg_x = k_x * particles.dx_tent / 2.
-		arg_y = k_y * particles.dy_tent / 2.
-
-		lambda_twiddle = sinc(arg_x) ** 2 * sinc(arg_y) ** 2 * particles.dx_tent * particles.dy_tent / (2. * pi)
+		arg_x = k_x * particles.dx_tent / (2. * pi) 
+		arg_y = k_y * particles.dy_tent / (2. * pi)
+ 
+		lambda_twiddle = np.sinc(arg_x) ** 2 * np.sinc(arg_y) ** 2 * particles.dx_tent * particles.dy_tent / (2. * pi)
 
 		return lambda_twiddle
 

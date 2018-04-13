@@ -12,14 +12,16 @@ pi = np.pi
 
 class particles_2D:
 
-	def __init__(self, dx_tent = 0.1, dy_tent = 0.1):
+	def __init__(self, dx_tent = 0.1, dy_tent = 0.1, Q0 = 1.0):
 		#self.coordinates = coordinates
 		#self.n_particles = len(coordinates)	
 		self.dx_tent = dx_tent
 		self.dy_tent = dy_tent
-		self.charge = q
+		self.Q0 = Q0
 
 	def construct_gaussian(self, N, sigma_x = 1.0):
+	
+		w = self.Q0 / N
 
 		sigma_x = sigma_x
 		sigma_y = sigma_x
@@ -46,7 +48,7 @@ class particles_2D:
 
 		self.x = x
 		self.y = y
-		self.charge = np.ones(len(x))
+		self.charge = w * np.ones(len(x))
 
 	def construct_gaussian_r(self, N, sigma_r):
 
@@ -58,7 +60,7 @@ class particles_2D:
 
 		self.x = x
 		self.y = y
-		self.charge = np.ones(len(x))
+		self.charge = q * np.ones(len(x))
 
 	def lambda_twiddle(self, k_x_vector, k_y_vector):
 
