@@ -19,12 +19,15 @@ class field_solver_2D(object):
 		""" Input data from the user for the field solver """
 		self.lambda_y_0 = lambda_y_0
 		self.lambda_x_0 = lambda_x_0
-		self.n_modes_y = n_modes_y * 2 + 1
-		self.n_modes_x = n_modes_x * 2 + 1
+		self.n_modes_y = n_modes_y * 2
+		self.n_modes_x = n_modes_x * 2
+
+		index_x = np.append(-np.arange(n_modes_x)[::-1] - 1, np.arange(n_modes_x) + 1, axis = 0)
+		index_y = np.append(-np.arange(n_modes_y)[::-1] - 1, np.arange(n_modes_y) + 1, axis = 0)
 
 		""" Compute the k_vectors needed to build the k-matrix"""
-		self.k_x_vector = np.linspace(- n_modes_x, n_modes_x, self.n_modes_x ) * 2.0 * pi / self.lambda_x_0
-		self.k_y_vector = np.linspace(- n_modes_y, n_modes_y, self.n_modes_y ) * 2.0 * pi / self.lambda_y_0
+		self.k_x_vector = index_x * 2.0 * pi / self.lambda_x_0
+		self.k_y_vector = index_y * 2.0 * pi / self.lambda_y_0
 
 		self.k_x_matrix_sq,self.k_y_matrix_sq = np.meshgrid(self.k_x_vector ** 2, self.k_y_vector ** 2)
 
@@ -32,7 +35,7 @@ class field_solver_2D(object):
 
 		self.k_sq_inv = 1. / self.k_matrix_sq # np.linalg.pinv(self.k_matrix_sq)
 
-		self.k_sq_inv[n_modes_x , n_modes_y ] = 0
+		#self.k_sq_inv[n_modes_x , n_modes_y ] = 0
 
 	def compute_phi(self, particles):	
 		
@@ -42,12 +45,13 @@ class field_solver_2D(object):
 		kx4 = np.einsum('m,n,p -> mnp', self.k_x_vector,np.ones(self.n_modes_y), particles.x)
 		ky4 = np.einsum('m,n,p -> mnp', np.ones(self.n_modes_x),self.k_y_vector, particles.y)
 		exponential_arg = kx4 + ky4		
-		
-		ptcl_exponential = exp(1j * exponential_arg) * self.f_sigma(kx4, ky4, particles)
+
+		ptcl_exponential = exp(1j * exponential_arg) #* dk  #* self.f_sigma(kx4, ky4, particles)
 
 		phi = einsum('xyp, xy, p -> xy', ptcl_exponential, self.k_sq_inv, particles.charge)
 
-		self.phi = phi
+		self.phi = - phi / e_0  #/ (self.lambda_x_0 * self.lambda_y_0)
+
 		return phi
 
 
@@ -77,13 +81,13 @@ class field_solver_2D(object):
 		phi_modes = np.exp(1.j*exp_arg) #+ np.exp(1.j * exp_arg_2)
 
 		#now multiply by the sigma matrix, component-wise - using shared mn indices
-		phi_amps = np.einsum('mn,mnij->mnij',phi,phi_modes)
+		phi_amps = np.einsum('mn,mnij->mnij',phi, phi_modes)
 
 		#now sum over all modes (mn)
 		phi_vals = np.einsum('mnij->ij',phi_amps)
 
 
-		return phi_vals, XX, YY
+		return phi_vals - np.min(phi_vals), XX, YY
 
 	def f_sigma(self, k_x, k_y, particles):
 

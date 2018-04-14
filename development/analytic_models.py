@@ -33,7 +33,7 @@ class uniform_gaussian:
 
 		arg_r = r**2 / (2. * self.sigma_r ** 2)
 
-		phi_r = (self.Q_0 / (self.sigma_r * e_0 * np.sqrt(2. * pi **3)) * 1. / 2. * self.sigma_r**2 * (np.log( arg_r ) + gamma_inc(arg_r) + gamma_em))
+		phi_r = (self.Q_0 * pi / (self.sigma_r ** 2 * e_0) * 1. / 2. * self.sigma_r**2 * (np.log( arg_r ) + gamma_inc(arg_r) + gamma_em))
 
 		return r, phi_r
 
@@ -63,6 +63,13 @@ class kv:
 			(np.log(r) - np.log(self.r_0) + 1) * self.r_0**2 * (r >= self.r_0))
 
 		return r,phi_r
+
+	def compute_E(self,x,y):
+
+		r = np.sqrt(x**2 + y**2)
+
+		E_r = self.Q_0 / (e_0 * self.r_0**2) * ( r**2 * (r < self.r_0) + 
+			(np.log(r) - np.log(self.r_0) + 1) * self.r_0**2 * (r >= self.r_0))
 
 
 

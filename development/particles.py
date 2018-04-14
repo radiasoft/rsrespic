@@ -12,19 +12,21 @@ pi = np.pi
 
 class particles_2D:
 
-	def __init__(self, dx_tent = 0.1, dy_tent = 0.1, Q0 = 1.0):
+	def __init__(self, dx_tent = 0.1, dy_tent = 0.1, Q0 = 1.0, N = 50000):
 		#self.coordinates = coordinates
 		#self.n_particles = len(coordinates)	
 		self.dx_tent = dx_tent
 		self.dy_tent = dy_tent
 		self.Q0 = Q0
+		self.N = N
+		self.w = self.Q0 / N 
+		print self.w
 
-	def construct_gaussian(self, N, sigma_x = 1.0):
+	def construct_gaussian(self,sigma_x = 1.0, sigma_y = 1.0):
 	
-		w = self.Q0 / N
 
 		sigma_x = sigma_x
-		sigma_y = sigma_x
+		sigma_y = sigma_y
 		sigma_xp = 0.01
 		sigma_yp = 0.01
 
@@ -44,39 +46,39 @@ class particles_2D:
 			[sigma_xy**2,sigma_xpy**2,sigma_y**2,sigma_yyp**2],
 			[sigma_xyp**2,sigma_xpyp**2,sigma_yyp**2,sigma_yp**2]]
 
-		x, px, y, py = np.random.multivariate_normal(mean, cov, N).T
+		x, px, y, py = np.random.multivariate_normal(mean, cov, self.N).T
 
 		self.x = x
 		self.y = y
-		self.charge = w * np.ones(len(x))
+		self.charge = self.w * np.ones(len(x))
 
-	def construct_gaussian_r(self, N, sigma_r):
+	def construct_gaussian_r(self,sigma_r):
 
-		r = np.abs(np.random.normal(0, sigma_r**2, N))
-		theta = np.random.uniform(0,2*pi, N)
+		r = np.abs(np.random.normal(0, sigma_r**2, self.N))
+		theta = np.random.uniform(0,2*pi, self.N)
 
 		x = np.sqrt(r) * np.cos(theta)
 		y = np.sqrt(r) * np.sin(theta)
 
 		self.x = x
 		self.y = y
-		self.charge = q * np.ones(len(x))
+		self.charge = self.w * np.ones(len(x))
 
 	def lambda_twiddle(self, k_x_vector, k_y_vector):
 
 		return
 
 
-	def construct_kv(self,N, r_0 = 0.5):
+	def construct_kv(self, r_0 = 0.5):
 
-		r = np.random.uniform(0,r_0**2,N)
-		theta = np.random.uniform(0,2*pi, N)
+		r = np.random.uniform(0,r_0**2,self.N)
+		theta = np.random.uniform(0,2*pi, self.N)
 
 		x = np.sqrt(r) * np.cos(theta)
 		y = np.sqrt(r) * np.sin(theta)
 
 		self.x = x
 		self.y = y
-		self.charge = np.ones(len(x))
+		self.charge = self.w * np.ones(len(x))
 
 
