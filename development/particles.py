@@ -23,7 +23,7 @@ class particles_2D:
 		print self.w
 
 	def construct_gaussian(self,sigma_x = 1.0, sigma_y = 1.0):
-	
+		self.sigma = sigma_x
 
 		sigma_x = sigma_x
 		sigma_y = sigma_y
@@ -38,7 +38,7 @@ class particles_2D:
 		sigma_xpyp = 0.0000
 		sigma_yyp = 0.0000
 			
-		mean = [0,0,0,0]
+		mean = [0.0,0.0,0.0,0]
 
 
 		cov = [[sigma_x**2, sigma_xxp**2 , sigma_xy**2 ,sigma_xyp**2],

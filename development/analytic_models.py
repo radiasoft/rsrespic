@@ -34,6 +34,7 @@ class uniform_gaussian:
 		arg_r = r**2 / (2. * self.sigma_r ** 2)
 
 		phi_r = (self.Q_0 * pi / (self.sigma_r ** 2 * e_0) * 1. / 2. * self.sigma_r**2 * (np.log( arg_r ) + gamma_inc(arg_r) + gamma_em))
+		#phi_r = ( pi / (self.sigma_r ** 2 ) * 1. / 2. * self.sigma_r**2 * (np.log( arg_r ) + gamma_inc(arg_r) + gamma_em))
 
 		return r, phi_r
 
