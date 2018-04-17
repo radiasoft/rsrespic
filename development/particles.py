@@ -8,38 +8,29 @@ from scipy.special import erf
 pi = np.pi
 
 
-	
 
-class particles_2D:
+class distribution:
 
-	def __init__(self, dx_tent = 0.1, dy_tent = 0.1, Q0 = 1.0, N = 50000):
-		#self.coordinates = coordinates
-		#self.n_particles = len(coordinates)	
-		self.dx_tent = dx_tent
-		self.dy_tent = dy_tent
-		self.Q0 = Q0
+	def __init__(self, N = 0):
+
 		self.N = N
-		self.w = self.Q0 / N 
-		print self.w
-
-	def construct_gaussian(self,sigma_x = 1.0, sigma_y = 1.0):
-		self.sigma = sigma_x
-
+	
+	def construct_uniform_guassian_2D(self, x0 = 0, y0 =0, xp0 = 0, yp0 = 0,
+			sigma_x = 0, sigma_y = 0, sigma_xp = 0, sigma_yp = 0):
+		
 		sigma_x = sigma_x
 		sigma_y = sigma_y
-		sigma_xp = 0.01
-		sigma_yp = 0.01
+		sigma_xp = sigma_xp
+		sigma_yp = sigma_yp
 
-
-		sigma_xxp = 0.0005
-		sigma_xy = 0.0000
-		sigma_xyp = 0.0000
-		sigma_xpy = 0.0000
-		sigma_xpyp = 0.0000
-		sigma_yyp = 0.0000
+		sigma_xxp = 0.0
+		sigma_xy = 0.0		
+		sigma_xyp = 0.0
+		sigma_xpy = 0.0
+		sigma_xpyp = 0.0
+		sigma_yyp = 0.0
 			
-		mean = [0.0,0.0,0.0,0]
-
+		mean = [x0, xp0, y0, yp0]
 
 		cov = [[sigma_x**2, sigma_xxp**2 , sigma_xy**2 ,sigma_xyp**2],
 			[sigma_xxp**2,sigma_xp**2, sigma_xpy**2 ,sigma_xpyp**2],
@@ -47,38 +38,96 @@ class particles_2D:
 			[sigma_xyp**2,sigma_xpyp**2,sigma_yyp**2,sigma_yp**2]]
 
 		x, px, y, py = np.random.multivariate_normal(mean, cov, self.N).T
-
+		
 		self.x = x
 		self.y = y
-		self.charge = self.w * np.ones(len(x))
+		self.px = px
+		self.py = py
 
-	def construct_gaussian_r(self,sigma_r):
+		return x,px,y,py
 
-		r = np.abs(np.random.normal(0, sigma_r**2, self.N))
-		theta = np.random.uniform(0,2*pi, self.N)
+
+	def construct_kv(self, r_0 = 1.0):
+		
+		r = np.random.uniform(0, r_0**2, self.N)
+		theta = np.random.uniform(0, 2*pi, self.N)
 
 		x = np.sqrt(r) * np.cos(theta)
 		y = np.sqrt(r) * np.sin(theta)
 
+		px = np.zeros(len(x))
+		py = np.zeros(len(x))
+		
 		self.x = x
 		self.y = y
-		self.charge = self.w * np.ones(len(x))
+		self.px = px
+		self.py = py
+		
+		return x,px,y,py
 
-	def lambda_twiddle(self, k_x_vector, k_y_vector):
-
-		return
 
 
-	def construct_kv(self, r_0 = 0.5):
+class particles_2D_delta:
 
-		r = np.random.uniform(0,r_0**2,self.N)
-		theta = np.random.uniform(0,2*pi, self.N)
+	def __init__(self, Q_0 = 1.0, N = 1000):	
 
-		x = np.sqrt(r) * np.cos(theta)
-		y = np.sqrt(r) * np.sin(theta)
+		self.Q_0 = Q_0
+		self.N = N
+		self.w = self.Q_0 / N 
+		self.x = np.zeros(N)
+		self.px = np.zeros(N)
+		self.y = np.zeros(N)
+		self.py = np.zeros(N)
+		self.x_extent = 1.
+		self.y_extent = 1.
 
-		self.x = x
-		self.y = y
-		self.charge = self.w * np.ones(len(x))
+	def initialize_particles(self,distribution):
+
+		self.x = distribution.x
+		self.px = distribution.px
+		self.y = distribution.y
+		self.py = distribution.py
+
+
+	def lambda_twiddle(self, k_matrix, extent):
+		
+		row,col = k_matrix.shape
+
+		return np.ones(k_matrix.shape)
+
+
+
+
+class particles_2D_tent:
+
+	def __init__(self, dx_tent = 0.1, dy_tent = 0.1, Q_0 = 1.0, N = 1000):
+		#self.coordinates = coordinates
+		#self.n_particles = len(coordinates)	
+		self.x_extent = dx_tent
+		self.y_extent = dy_tent
+		self.Q_0 = Q_0
+		self.N = N
+		self.w = self.Q_0 / N
+		self.x = np.zeros(N)
+		self.px = np.zeros(N)
+		self.y = np.zeros(N)
+		self.py = np.zeros(N)
+	
+	def initialize_particles(self,distribution):
+
+		self.x = distribution.x
+		self.px = distribution.px
+		self.y = distribution.y
+		self.py = distribution.py
+
+
+	def lambda_twiddle(self, k, tent_width):
+
+		arg = k * tent_width / (2. * pi) 
+ 
+		lambda_twiddle = np.sinc(arg) ** 2
+
+		return lambda_twiddle
+
 
 
