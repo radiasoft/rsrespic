@@ -83,6 +83,7 @@ class particles_2D_delta:
 		self.gamma = gamma
 		self.beta = np.sqrt( 1. - 1. / gamma **2 )
 		self.m = m
+		self.pz = 10.
 
 	def initialize_particles(self,distribution):
 
@@ -118,7 +119,8 @@ class particles_2D_tent:
 		self.gamma = gamma
 		self.beta = np.sqrt( 1. - 1. / gamma **2 )
 		self.m = m
-	
+		self.pz = 10.
+
 	def initialize_particles(self,distribution):
 
 		self.x = distribution.x

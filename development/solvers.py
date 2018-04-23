@@ -116,18 +116,26 @@ class kinetics_solver_SC2D:
 
 	def step(self, particles, fields):
 
-		particles.x = particles.x + particles.px * self.ds / 2.
-		particles.y = particles.y + particles.py * self.ds / 2.
+		#particles.x = particles.x + particles.px * self.ds / 2.
+		#particles.y = particles.y + particles.py * self.ds / 2.
 
-		kick_x =  - fields.kick_x  * particles.w / particles.m
-		kick_y =  - fields.kick_y * particles.w / particles.m
-		print np.mean(np.abs(kick_x)) 
+		particles.x = 	(particles.x - particles.px * (1. / particles.beta - 1.) * 
+			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
+ 
+		particles.y = 	(particles.y - particles.py * (1. / particles.beta - 1.) * 
+			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
 
-		particles.py = particles.py + kick_y * self.ds
-		particles.px = particles.px + kick_x * self.ds
+		kick_x =  - fields.kick_x  * particles.w
+		kick_y =  - fields.kick_y * particles.w
 
-		particles.x = particles.x + particles.px * self.ds / 2.
-		particles.y = particles.y + particles.py * self.ds / 2.
+		particles.x = 	(particles.x - particles.px * (1. / particles.beta - 1.) * 
+			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
+ 
+		particles.y = 	(particles.y - particles.py * (1. / particles.beta - 1.) * 
+			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
+
+		#particles.x = particles.x + particles.px * self.ds / 2.
+		#particles.y = particles.y + particles.py * self.ds / 2.
 
 		return particles
 

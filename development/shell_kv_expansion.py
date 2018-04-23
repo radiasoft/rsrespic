@@ -36,7 +36,7 @@ distribution.construct_kv(r_0 = sigma_x)
 ## Particle distributions
 ## I am consturcting both tent and delta functions for comparison purposes 
 particles = particles.particles_2D_tent(dx_tent = 2. * L_min, dy_tent = 2. * L_min 
-	, Q_0 = Q, N = n_particles, gamma = 10.0, m = m_e)
+	, Q_0 = Q, N = n_particles, gamma = 2.0, m = m_e)
 
 particles.initialize_particles(distribution)
 
@@ -56,7 +56,7 @@ s_beam = []
 
 s = 0
 k = 0
-while k < 100:
+while k < 50:
 	t0 = time.time()
 
 	field_solver.compute_phi(fields, particles)
