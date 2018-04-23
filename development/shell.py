@@ -22,33 +22,33 @@ n_particles = 100
 
 ## Field solver parameters 
 L_0 = 15. * sigma_x ## Half the domain size
-L_min = L_0 / 10 ## minimum wavelength to resolve
+L_min = L_0 / 100 ## minimum wavelength to resolve
 
 ## Grid definitions for plotting 
-x_max = 5 * sigma_x ## Half the plotting region
+x_max = 1.2 * sigma_x ## Half the plotting region
 n_grid = 41
 grid_index = int(n_grid / 2) 
 
 ## Here we construct the analytic solution for comparison purposes 
-x = np.linspace(-x_max,x_max,100)
+x = np.linspace(-x_max,x_max,50)
 y = 0 * x
 gaussian = analytic_models.uniform_gaussian(sigma_r = sigma_x, Q_0 = Q)
 r_g,phi_g = gaussian.compute_phi(x,y)
 
 ## This is where we initialize a gaussian distribuiton
-gauss_distribution = particles.distribution(N = n_particles)
-gauss_distribution.construct_uniform_guassian_2D(sigma_x = sigma_x, sigma_y = sigma_x)
+distribution = particles.distribution(N = n_particles)
+distribution.construct_kv(r_0 = sigma_x)
 
 ## Particle distributions
 ## I am consturcting both tent and delta functions for comparison purposes 
-particles_tent = particles.particles_2D_tent(dx_tent = sigma_x / 5., dy_tent = sigma_x / 5. 
+particles_tent = particles.particles_2D_tent(dx_tent = 2. * L_min, dy_tent = 2. * L_min 
 	, Q_0 = Q, N = n_particles)
 
 particles_delta = particles.particles_2D_delta(Q_0 = Q, N = n_particles)
 
 ## Here the particle distributions are initialized 
-particles_tent.initialize_particles(gauss_distribution)
-particles_delta.initialize_particles(gauss_distribution)
+particles_tent.initialize_particles(distribution)
+particles_delta.initialize_particles(distribution)
 
 
 ## Define the fields 
@@ -84,7 +84,7 @@ if plot:
 	plt.plot(fields_delta.y_grid[:, grid_index] / sigma_x, 
 		fields_delta.phi_grid[:, grid_index], label = 'delta functions', linewidth = 2.)
 
-	plt.plot(x / sigma_x, phi_g, label = 'analytic', linewidth = 2.)
+	#plt.plot(x / sigma_x, phi_g, label = 'analytic', linewidth = 2.)
 
 	plt.legend(loc = 0)
 	plt.xlabel(r'Position [$\sigma_x$]')

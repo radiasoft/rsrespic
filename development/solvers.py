@@ -38,9 +38,9 @@ class field_solver_2D(object):
 
 		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv) * 8. * pi
 
-		fields.phi = - phi / e_0
+		fields.phi = - phi / e_0 * 1. / (particles.gamma ** 2. - 1)
 
-		return - phi / e_0
+		return - phi / e_0 
 
 
 	def compute_phi_mesh(self, fields,  **kwargs):
@@ -86,9 +86,50 @@ class field_solver_2D(object):
 		return phi_vals - np.min(phi_vals), XX, YY
 
 
+	def compute_kick(self, fields, particles):
+
+		phi = fields.phi  #/ (fields.lambda_y_0 * fields.lambda_x_0)
+
+		kx4 = np.einsum('m,i -> mi', fields.k_x_vector, particles.x)
+		ky4 = np.einsum('n,i -> ni', fields.k_y_vector, particles.y)
+
+		exp_x = np.exp(-1j * kx4)		
+		exp_y = np.exp(-1j * ky4)
+
+		kick_modes = np.einsum('mp, np -> mnp', exp_x, exp_y)
+
+		kick_x = np.einsum('mn, m, mnp -> p', phi, fields.k_x_vector, kick_modes)
+		kick_y = np.einsum('mn, n, mnp -> p', phi, fields.k_y_vector, kick_modes)
+
+		fields.kick_x = np.real(kick_x)
+		fields.kick_y = np.real(kick_y)
+
+		return kick_x, kick_y
 
 
+class kinetics_solver_SC2D:
 
+	def __init__(self, ds = 1.0e-2):
+
+		self.ds = ds
+
+
+	def step(self, particles, fields):
+
+		particles.x = particles.x + particles.px * self.ds / 2.
+		particles.y = particles.y + particles.py * self.ds / 2.
+
+		kick_x =  - fields.kick_x  * particles.w / particles.m
+		kick_y =  - fields.kick_y * particles.w / particles.m
+		print np.mean(np.abs(kick_x)) 
+
+		particles.py = particles.py + kick_y * self.ds
+		particles.px = particles.px + kick_x * self.ds
+
+		particles.x = particles.x + particles.px * self.ds / 2.
+		particles.y = particles.y + particles.py * self.ds / 2.
+
+		return particles
 
 
 	

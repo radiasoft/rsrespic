@@ -69,7 +69,7 @@ class distribution:
 
 class particles_2D_delta:
 
-	def __init__(self, Q_0 = 1.0, N = 1000):	
+	def __init__(self, Q_0 = 1.0, N = 1000, gamma = 1.0, m = 1.):	
 
 		self.Q_0 = Q_0
 		self.N = N
@@ -80,6 +80,9 @@ class particles_2D_delta:
 		self.py = np.zeros(N)
 		self.x_extent = 1.
 		self.y_extent = 1.
+		self.gamma = gamma
+		self.beta = np.sqrt( 1. - 1. / gamma **2 )
+		self.m = m
 
 	def initialize_particles(self,distribution):
 
@@ -100,7 +103,7 @@ class particles_2D_delta:
 
 class particles_2D_tent:
 
-	def __init__(self, dx_tent = 0.1, dy_tent = 0.1, Q_0 = 1.0, N = 1000):
+	def __init__(self, dx_tent = 0.1, dy_tent = 0.1, Q_0 = 1.0, N = 1000, gamma = 1.0, m = 1.):
 		#self.coordinates = coordinates
 		#self.n_particles = len(coordinates)	
 		self.x_extent = dx_tent
@@ -112,6 +115,9 @@ class particles_2D_tent:
 		self.px = np.zeros(N)
 		self.y = np.zeros(N)
 		self.py = np.zeros(N)
+		self.gamma = gamma
+		self.beta = np.sqrt( 1. - 1. / gamma **2 )
+		self.m = m
 	
 	def initialize_particles(self,distribution):
 

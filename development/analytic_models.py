@@ -61,7 +61,7 @@ class kv:
 		r = np.sqrt(x**2 + y**2)
 
 		phi_r = self.Q_0 * pi / (2. * e_0 * self.r_0**2) * ( r**2 * (r < self.r_0) + 
-			(np.log(r / self.r_0) + self.r_0 ** 2) * (r >= self.r_0) )
+			(np.log(r) - np.log(self.r_0) + self.r_0 ** 2) * (r >= self.r_0) )
 
 		return r,phi_r
 

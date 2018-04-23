@@ -42,6 +42,16 @@ class cartesian_2D:
 
 		self.k_sq_inv = 1. / k_matrix_sq 
 
+		self.phi = 0.0
+		self.Ax = 0.0 
+		self.Ay = 0.0
+		self.Az = 0.0
+
+	def write_output(self, fn):
+
+
+		return 
+		
 
 		
 		
