@@ -1,12 +1,16 @@
 
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 import matplotlib
+matplotlib.use('TkAgg')
 matplotlib.rcParams.update({'font.size': 16})
 
-import colormaps as cmaps
+import matplotlib.pyplot as plt
+
+
+
+#import colormaps as cmaps
 
 import solvers
 import particles
@@ -18,16 +22,16 @@ pi = np.pi
 ## Particle definitions 
 sigma_x = 0.05
 Q = 50.0e-12
-n_particles = 100
+n_particles = 1000
 
 ## Field solver parameters 
 L_0 = 15. * sigma_x ## Half the domain size
 L_min = L_0 / 100 ## minimum wavelength to resolve
 
 ## Grid definitions for plotting 
-x_max = 1.2 * sigma_x ## Half the plotting region
+x_max = 2 * sigma_x ## Half the plotting region
 n_grid = 41
-grid_index = int(n_grid / 2) 
+grid_index = int(n_grid / 2.) 
 
 ## Here we construct the analytic solution for comparison purposes 
 x = np.linspace(-x_max,x_max,50)
@@ -37,7 +41,8 @@ r_g,phi_g = gaussian.compute_phi(x,y)
 
 ## This is where we initialize a gaussian distribuiton
 distribution = particles.distribution(N = n_particles)
-distribution.construct_kv(r_0 = sigma_x)
+distribution.construct_uniform_guassian_2D(sigma_x = sigma_x, sigma_y=sigma_x)
+#distribution.construct_kv(r_0 = sigma_x)
 
 ## Particle distributions
 ## I am consturcting both tent and delta functions for comparison purposes 

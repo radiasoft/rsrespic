@@ -5,7 +5,7 @@ from scipy.constants import elementary_charge as q
 from scipy.special import erf
 from numpy import exp, sin, einsum
 
-import colormaps as cmaps
+#import colormaps as cmaps
 import matplotlib.pyplot as plt
 
 pi = np.pi
@@ -119,19 +119,19 @@ class kinetics_solver_SC2D:
 		#particles.x = particles.x + particles.px * self.ds / 2.
 		#particles.y = particles.y + particles.py * self.ds / 2.
 
-		particles.x = 	(particles.x - particles.px * (1. / particles.beta - 1.) * 
+		particles.x = 	(particles.x + particles.px * (1. / particles.beta**2 - 1.) * 
 			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
  
-		particles.y = 	(particles.y - particles.py * (1. / particles.beta - 1.) * 
+		particles.y = 	(particles.y - particles.py * (1. / particles.beta**2 - 1.) * 
 			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
 
 		kick_x =  - fields.kick_x  * particles.w
 		kick_y =  - fields.kick_y * particles.w
 
-		particles.x = 	(particles.x - particles.px * (1. / particles.beta - 1.) * 
+		particles.x = 	(particles.x - particles.px * (1. / particles.beta**2 - 1.) * 
 			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
  
-		particles.y = 	(particles.y - particles.py * (1. / particles.beta - 1.) * 
+		particles.y = 	(particles.y - particles.py * (1. / particles.beta**2 - 1.) * 
 			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
 
 		#particles.x = particles.x + particles.px * self.ds / 2.
