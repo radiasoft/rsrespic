@@ -31,13 +31,13 @@ class field_solver_2D(object):
 		exp_x = np.exp(1j * kx1) * particles.lambda_twiddle(kx_mat, particles.x_extent)
 		exp_y = np.exp(1j * ky1) * particles.lambda_twiddle(ky_mat, particles.y_extent)
 	
-		ptcl_exponential = np.einsum('mp, np -> mn', exp_x, exp_y) * particles.charge
+		ptcl_exponential = np.einsum('mp, np -> mn', exp_x, exp_y) 
 
-		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv) * 8. * pi
+		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv)
 
-		fields.phi = - phi / e_0 * 1. / (particles.gamma ** 2. - 1)
+		fields.phi = - phi * particles.charge * particles.weight  * 4. * pi / ( c * (particles.gamma ** 2. - 1) )
 
-		return - phi / e_0 
+		return 
 
 
 	def compute_phi_mesh(self, fields,  **kwargs):
@@ -80,7 +80,7 @@ class field_solver_2D(object):
 		fields.x_grid = XX
 		fields.y_grid = YY
 
-		return phi_vals - np.min(phi_vals), XX, YY
+		return
 
 
 	def compute_kick(self, fields, particles):
@@ -101,7 +101,7 @@ class field_solver_2D(object):
 		fields.kick_x = np.real(kick_x)
 		fields.kick_y = np.real(kick_y)
 
-		return kick_x, kick_y
+		return
 
 
 class kinetics_solver_SC2D:
@@ -115,7 +115,7 @@ class kinetics_solver_SC2D:
 	def compute_momentum_arg(self,particles):
 
 		## Calculate the square root term in the hamaltonian
-		argumnent = np.sqrt(particles.beta**2 * particles.p_xi **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2)
+		argumnent = np.sqrt(particles.beta**2 * particles.p_xi **2 - particles.px **2 - particles.py**2 - particles.m_0**2 * c**2)
 		
 		return argumnent
 
@@ -131,26 +131,26 @@ class kinetics_solver_SC2D:
 
 
 		## First half drift
-		particles.x += particles.px * relativistic_factor * argumnent * self.ds / 2.
-		particles.y += particles.py * relativistic_factor * argumnent * self.ds / 2.
+		particles.x += - particles.px * relativistic_factor * argumnent * self.ds / 2.
+		particles.y += - particles.py * relativistic_factor * argumnent * self.ds / 2.
 
 		## compute the full kick
-		kick_x =  - fields.kick_x  * particles.mass
-		kick_y =  - fields.kick_y * particles.mass
+		kick_x =  - fields.kick_x  * particles.charge * particles.weight / c
+		kick_y =  - fields.kick_y * particles.mass * particles.weight / c
 
 		## apply the kick 
-		particles.px += kick_x * self.ds
-		particles.py += kick_y * self.ds
+		particles.px += - kick_x * self.ds
+		particles.py += - kick_y * self.ds
 
 		## recompute relativistic momentum argument with new transverse momenta
 		argumnent = 1. / self.compute_momentum_arg(particles)
 
 		## second half drift
-		particles.x += particles.px * relativistic_factor * argumnent * self.ds / 2.
-		particles.y += particles.py * relativistic_factor * argumnent * self.ds / 2.
+		particles.x += - particles.px * relativistic_factor * argumnent * self.ds / 2.
+		particles.y += - particles.py * relativistic_factor * argumnent * self.ds / 2.
 
 
-		return particles
+		return
 
 
 	

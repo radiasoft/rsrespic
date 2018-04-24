@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.constants import c, mu_0, m_e, m_p
 from scipy.constants import epsilon_0 as e_0
-from scipy.constants import elementary_charge as q
+from scipy.constants import elementary_charge
 from scipy.special import erf
 
 pi = np.pi
@@ -48,7 +48,7 @@ class distribution:
 		self.z = z
 		self.pz = pz
 
-		return x,px,y,py,z,pz
+		return
 
 
 	def construct_kv(self, r_0 = 1.0):
@@ -72,22 +72,23 @@ class distribution:
 		self.z = z
 		self.pz = pz
 
-		return x,px,y,py,z,pz
+		return
 
 
 
 class particles_2D_delta:
 
-	def __init__(self, distribution, Q_0 = 1.0, m = 1., gamma = 1.01):	
+	def __init__(self, distribution, bunch_charge = 1.0, 
+		species_charge = elementary_charge, species_mass = m_e, gamma = 1.01):	
 		
 		self.x_extent = 1.
 		self.y_extent = 1.
 
-		self.Q_0 = Q_0
-		self.mass = m * distribution.N
-		self.m_0 = m
+		self.bunch_chage = bunch_charge
+		self.charge = species_charge
+		self.m_0 = species_mass
 
-		self.charge = Q_0 / distribution.N
+		self.weight = bunch_charge / species_charge / distribution.N
 
 		self.N = distribution.N
 
@@ -111,7 +112,7 @@ class particles_2D_delta:
 
 	def compute_p_zi(self):
 
-		self.p_xi = self.pz + gamma
+		self.p_xi = self.pz
 
 		return
 
@@ -127,16 +128,17 @@ class particles_2D_delta:
 
 class particles_2D_tent:
 
-	def __init__(self, distribution, dx_tent = 0.1, dy_tent = 0.1, Q_0 = 1.0, m = 1.0, gamma = 1.01):
-		#self.coordinates = coordinates
-		#self.n_particles = len(coordinates)	
+	def __init__(self, distribution, dx_tent = 0.1, dy_tent = 0.1,  bunch_charge = 1.0, 
+		species_charge = elementary_charge, species_mass = m_e, gamma = 1.01):
+
 		self.x_extent = dx_tent
 		self.y_extent = dy_tent
 		
-		self.Q_0 = Q_0
-		self.mass = m * distribution.N
-		self.charge = Q_0 / distribution.N
-		self.m_0 = m
+		self.bunch_chage = bunch_charge
+		self.charge = species_charge
+		self.m_0 = species_mass
+
+		self.weight = bunch_charge / species_charge / distribution.N
 
 		self.N = distribution.N
 
@@ -162,7 +164,7 @@ class particles_2D_tent:
 
 	def compute_p_zi(self):
 
-		self.p_xi = self.pz + gamma
+		self.p_xi = self.pz
 
 		return
 
