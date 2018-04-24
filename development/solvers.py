@@ -85,7 +85,7 @@ class field_solver_2D(object):
 
 	def compute_kick(self, fields, particles):
 
-		phi = fields.phi  #/ (fields.lambda_y_0 * fields.lambda_x_0)
+		phi = fields.phi / (fields.lambda_y_0 * fields.lambda_x_0)
 
 		kx4 = np.einsum('m,i -> mi', fields.k_x_vector, particles.x)
 		ky4 = np.einsum('n,i -> ni', fields.k_y_vector, particles.y)
@@ -95,8 +95,8 @@ class field_solver_2D(object):
 
 		kick_modes = np.einsum('mp, np -> mnp', exp_x, exp_y)
 
-		kick_x = np.einsum('mn, m, mnp -> p', phi, 1j * fields.k_x_vector, kick_modes)
-		kick_y = np.einsum('mn, n, mnp -> p', phi, 1j * fields.k_y_vector, kick_modes)
+		kick_x = np.einsum('mn, m, mnp -> p', phi, -1j * fields.k_x_vector, kick_modes)
+		kick_y = np.einsum('mn, n, mnp -> p', phi, -1j * fields.k_y_vector, kick_modes)
 
 		fields.kick_x = np.real(kick_x)
 		fields.kick_y = np.real(kick_y)
@@ -120,7 +120,7 @@ class kinetics_solver_SC2D:
 		return argumnent
 
 
-	def step(self, particles, fields):
+	def step(self, particles, fields, field_solver):
 
 		## The first thing is to trasform the longitudional momentum into canaonical coordiantes
 		particles.compute_p_xi()
@@ -130,14 +130,16 @@ class kinetics_solver_SC2D:
 		argumnent = 1. / self.compute_momentum_arg(particles)
 		relativistic_factor = 1. / particles.beta ** 2 - 1. 
 
-
 		## First half drift
 		particles.x += - particles.px * relativistic_factor * argumnent * self.ds / 2.
 		particles.y += - particles.py * relativistic_factor * argumnent * self.ds / 2.
 
+		field_solver.compute_phi(fields, particles)
+		field_solver.compute_kick(fields, particles)
+
 		## compute the full kick
-		kick_x =  - fields.kick_x * particles.charge * particles.weight / c
-		kick_y =  - fields.kick_y * particles.charge * particles.weight / c
+		kick_x = fields.kick_x * particles.charge * particles.weight / c
+		kick_y = fields.kick_y * particles.charge * particles.weight / c
 
 		## apply the kick 
 		particles.px += - kick_x * self.ds
@@ -156,4 +158,55 @@ class kinetics_solver_SC2D:
 
 	
 
+
+class kinetics_solver_FODO_Cell:
+
+	def __init__(self, ds = 1.0e-2):
+
+		self.ds = ds
+
+
+
+	def compute_momentum_arg(self,particles):
+
+		## Calculate the square root term in the hamaltonian
+		argumnent = np.sqrt(particles.beta**2 * particles.p_xi **2 - particles.px **2 - particles.py**2 - particles.m_0**2 * c**2)
+		
+		return argumnent
+
+
+	def step(self, particles, fields, field_solver):
+
+		## The first thing is to trasform the longitudional momentum into canaonical coordiantes
+		particles.compute_p_xi()
+
+
+		## This computes the square root term of the hamaltonian that is used in all drifts
+		argumnent = 1. / self.compute_momentum_arg(particles)
+		relativistic_factor = 1. / particles.beta ** 2 - 1. 
+
+		## First half drift
+		particles.x += particles.px * relativistic_factor * argumnent * self.ds / 2.
+		particles.y += particles.py * relativistic_factor * argumnent * self.ds / 2.
+
+		field_solver.compute_phi(fields, particles)
+		field_solver.compute_kick(fields, particles)
+
+		## compute the full kick
+		kick_x =  fields.kick_x * particles.charge * particles.weight / c
+		kick_y =  fields.kick_y * particles.charge * particles.weight / c
+
+		## apply the kick 
+		particles.px += - kick_x * self.ds
+		particles.py += - kick_y * self.ds
+
+		## recompute relativistic momentum argument with new transverse momenta
+		argumnent = 1. / self.compute_momentum_arg(particles)
+
+		## second half drift
+		particles.x += particles.px * relativistic_factor * argumnent * self.ds / 2.
+		particles.y += particles.py * relativistic_factor * argumnent * self.ds / 2.
+
+
+		return
 
