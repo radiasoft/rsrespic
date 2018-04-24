@@ -4,7 +4,6 @@ from scipy.constants import epsilon_0 as e_0
 from scipy.constants import elementary_charge as q
 from scipy.special import erf
 
-
 pi = np.pi
 
 

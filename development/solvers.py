@@ -5,9 +5,6 @@ from scipy.constants import elementary_charge as q
 from scipy.special import erf
 from numpy import exp, sin, einsum
 
-#import colormaps as cmaps
-import matplotlib.pyplot as plt
-
 pi = np.pi
 
 
@@ -34,7 +31,7 @@ class field_solver_2D(object):
 		exp_x = np.exp(1j * kx1) * particles.lambda_twiddle(kx_mat, particles.x_extent)
 		exp_y = np.exp(1j * ky1) * particles.lambda_twiddle(ky_mat, particles.y_extent)
 	
-		ptcl_exponential = np.einsum('mp, np -> mn', exp_x, exp_y) * particles.w 
+		ptcl_exponential = np.einsum('mp, np -> mn', exp_x, exp_y) * particles.charge
 
 		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv) * 8. * pi
 
@@ -114,28 +111,44 @@ class kinetics_solver_SC2D:
 		self.ds = ds
 
 
+
+	def compute_momentum_arg(self,particles):
+
+		## Calculate the square root term in the hamaltonian
+		argumnent = np.sqrt(particles.beta**2 * particles.p_xi **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2)
+		
+		return argumnent
+
+
 	def step(self, particles, fields):
 
-		#particles.x = particles.x + particles.px * self.ds / 2.
-		#particles.y = particles.y + particles.py * self.ds / 2.
+		## The first thing is to trasform the longitudional momentum into canaonical coordiantes
+		particles.compute_p_xi
 
-		particles.x = 	(particles.x + particles.px * (1. / particles.beta**2 - 1.) * 
-			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
- 
-		particles.y = 	(particles.y - particles.py * (1. / particles.beta**2 - 1.) * 
-			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
+		## This computes the square root term of the hamaltonian that is used in all drifts
+		argumnent = 1. / self.compute_momentum_arg(particles)
+		relativistic_factor = 1. / particles.beta ** 2 - 1. 
 
-		kick_x =  - fields.kick_x  * particles.w
-		kick_y =  - fields.kick_y * particles.w
 
-		particles.x = 	(particles.x - particles.px * (1. / particles.beta**2 - 1.) * 
-			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
- 
-		particles.y = 	(particles.y - particles.py * (1. / particles.beta**2 - 1.) * 
-			(1./ np.sqrt(particles.beta**2 * particles.pz **2 - particles.px **2 - particles.py**2 - particles.m**2 * c**2))) * self.ds / 2.
+		## First half drift
+		particles.x += particles.px * relativistic_factor * argumnent * self.ds / 2.
+		particles.y += particles.py * relativistic_factor * argumnent * self.ds / 2.
 
-		#particles.x = particles.x + particles.px * self.ds / 2.
-		#particles.y = particles.y + particles.py * self.ds / 2.
+		## compute the full kick
+		kick_x =  - fields.kick_x  * particles.mass
+		kick_y =  - fields.kick_y * particles.mass
+
+		## apply the kick 
+		particles.px += kick_x * self.ds
+		particles.py += kick_y * self.ds
+
+		## recompute relativistic momentum argument with new transverse momenta
+		argumnent = 1. / self.compute_momentum_arg(particles)
+
+		## second half drift
+		particles.x += particles.px * relativistic_factor * argumnent * self.ds / 2.
+		particles.y += particles.py * relativistic_factor * argumnent * self.ds / 2.
+
 
 		return particles
 

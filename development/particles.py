@@ -1,12 +1,10 @@
 import numpy as np
-from scipy.constants import c, mu_0, m_e
+from scipy.constants import c, mu_0, m_e, m_p
 from scipy.constants import epsilon_0 as e_0
 from scipy.constants import elementary_charge as q
 from scipy.special import erf
 
-
 pi = np.pi
-
 
 
 class distribution:
@@ -14,6 +12,7 @@ class distribution:
 	def __init__(self, N = 0):
 
 		self.N = N
+
 	
 	def construct_uniform_guassian_2D(self, x0 = 0, y0 =0, xp0 = 0, yp0 = 0,
 			sigma_x = 0, sigma_y = 0, sigma_xp = 0, sigma_yp = 0):
@@ -39,12 +38,17 @@ class distribution:
 
 		x, px, y, py = np.random.multivariate_normal(mean, cov, self.N).T
 		
+		z = np.zeros(len(x))
+		pz = np.zeros(len(x))
+
 		self.x = x
 		self.y = y
 		self.px = px
 		self.py = py
+		self.z = z
+		self.pz = pz
 
-		return x,px,y,py
+		return x,px,y,py,z,pz
 
 
 	def construct_kv(self, r_0 = 1.0):
@@ -58,32 +62,43 @@ class distribution:
 		px = np.zeros(len(x))
 		py = np.zeros(len(x))
 		
+		z = np.zeros(len(x))
+		pz = np.zeros(len(x))
+
 		self.x = x
 		self.y = y
 		self.px = px
 		self.py = py
-		
-		return x,px,y,py
+		self.z = z
+		self.pz = pz
+
+		return x,px,y,py,z,pz
 
 
 
 class particles_2D_delta:
 
-	def __init__(self, Q_0 = 1.0, N = 1000, gamma = 1.0, m = 1.):	
-
-		self.Q_0 = Q_0
-		self.N = N
-		self.w = self.Q_0 / N 
-		self.x = np.zeros(N)
-		self.px = np.zeros(N)
-		self.y = np.zeros(N)
-		self.py = np.zeros(N)
+	def __init__(self, distribution, Q_0 = 1.0, m = 1., gamma = 1.01):	
+		
 		self.x_extent = 1.
 		self.y_extent = 1.
+
+		self.Q_0 = Q_0
+		self.mass = m * distribution.N
+		self.m_0 = m
+
+		self.charge = Q_0 / distribution.N
+
+		self.N = distribution.N
+
+		self.set_gamma(gamma)
+		self.initialize_particles(distribution)
+
+
+	def set_gamma(self,gamma):
+
 		self.gamma = gamma
 		self.beta = np.sqrt( 1. - 1. / gamma **2 )
-		self.m = m
-		self.pz = 10.
 
 	def initialize_particles(self,distribution):
 
@@ -91,6 +106,14 @@ class particles_2D_delta:
 		self.px = distribution.px
 		self.y = distribution.y
 		self.py = distribution.py
+		self.z = distribution.z
+		self.pz = distribution.pz + self.gamma * self.m_0 * self.beta * c
+
+	def compute_p_zi(self):
+
+		self.p_xi = self.pz + gamma
+
+		return
 
 
 	def lambda_twiddle(self, k_matrix, extent):
@@ -104,22 +127,28 @@ class particles_2D_delta:
 
 class particles_2D_tent:
 
-	def __init__(self, dx_tent = 0.1, dy_tent = 0.1, Q_0 = 1.0, N = 1000, gamma = 1.0, m = 1.):
+	def __init__(self, distribution, dx_tent = 0.1, dy_tent = 0.1, Q_0 = 1.0, m = 1.0, gamma = 1.01):
 		#self.coordinates = coordinates
 		#self.n_particles = len(coordinates)	
 		self.x_extent = dx_tent
 		self.y_extent = dy_tent
+		
 		self.Q_0 = Q_0
-		self.N = N
-		self.w = self.Q_0 / N
-		self.x = np.zeros(N)
-		self.px = np.zeros(N)
-		self.y = np.zeros(N)
-		self.py = np.zeros(N)
+		self.mass = m * distribution.N
+		self.charge = Q_0 / distribution.N
+		self.m_0 = m
+
+		self.N = distribution.N
+
+		self.set_gamma(gamma)
+		self.initialize_particles(distribution)
+
+
+	def set_gamma(self,gamma):
+
 		self.gamma = gamma
 		self.beta = np.sqrt( 1. - 1. / gamma **2 )
-		self.m = m
-		self.pz = 10.
+
 
 	def initialize_particles(self,distribution):
 
@@ -127,6 +156,15 @@ class particles_2D_tent:
 		self.px = distribution.px
 		self.y = distribution.y
 		self.py = distribution.py
+		self.z = distribution.z
+		self.pz = distribution.pz + self.gamma * self.m_0 * self.beta * c
+
+
+	def compute_p_zi(self):
+
+		self.p_xi = self.pz + gamma
+
+		return
 
 
 	def lambda_twiddle(self, k, tent_width):
