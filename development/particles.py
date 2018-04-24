@@ -51,13 +51,13 @@ class distribution:
 		return
 
 
-	def construct_kv(self, r_0 = 1.0):
+	def construct_kv(self, r_0 = 1.0, x0 = 0.0, y0 = 0.0):
 		
 		r = np.random.uniform(0, r_0**2, self.N)
 		theta = np.random.uniform(0, 2*pi, self.N)
 
-		x = np.sqrt(r) * np.cos(theta)
-		y = np.sqrt(r) * np.sin(theta)
+		x = np.sqrt(r) * np.cos(theta) + x0
+		y = np.sqrt(r) * np.sin(theta) + y0
 
 		px = np.zeros(len(x))
 		py = np.zeros(len(x))

@@ -95,8 +95,8 @@ class field_solver_2D(object):
 
 		kick_modes = np.einsum('mp, np -> mnp', exp_x, exp_y)
 
-		kick_x = np.einsum('mn, m, mnp -> p', phi, fields.k_x_vector, kick_modes)
-		kick_y = np.einsum('mn, n, mnp -> p', phi, fields.k_y_vector, kick_modes)
+		kick_x = np.einsum('mn, m, mnp -> p', phi, 1j * fields.k_x_vector, kick_modes)
+		kick_y = np.einsum('mn, n, mnp -> p', phi, 1j * fields.k_y_vector, kick_modes)
 
 		fields.kick_x = np.real(kick_x)
 		fields.kick_y = np.real(kick_y)
