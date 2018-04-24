@@ -108,11 +108,11 @@ class particles_2D_delta:
 		self.y = distribution.y
 		self.py = distribution.py
 		self.z = distribution.z
-		self.pz = distribution.pz + self.gamma * self.m_0 * self.beta * c
+		self.pt = distribution.pz + self.gamma * self.m_0 * c
 
-	def compute_p_zi(self):
+	def compute_p_xi(self):
 
-		self.p_xi = self.pz
+		self.p_xi = self.pt / self.beta
 
 		return
 
@@ -159,12 +159,12 @@ class particles_2D_tent:
 		self.y = distribution.y
 		self.py = distribution.py
 		self.z = distribution.z
-		self.pz = distribution.pz + self.gamma * self.m_0 * self.beta * c
+		self.pt = distribution.pz + self.gamma * self.m_0 * c
 
 
-	def compute_p_zi(self):
+	def compute_p_xi(self):
 
-		self.p_xi = self.pz
+		self.p_xi = self.pt / self.beta
 
 		return
 

@@ -123,7 +123,8 @@ class kinetics_solver_SC2D:
 	def step(self, particles, fields):
 
 		## The first thing is to trasform the longitudional momentum into canaonical coordiantes
-		particles.compute_p_xi
+		particles.compute_p_xi()
+
 
 		## This computes the square root term of the hamaltonian that is used in all drifts
 		argumnent = 1. / self.compute_momentum_arg(particles)
@@ -135,8 +136,8 @@ class kinetics_solver_SC2D:
 		particles.y += - particles.py * relativistic_factor * argumnent * self.ds / 2.
 
 		## compute the full kick
-		kick_x =  - fields.kick_x  * particles.charge * particles.weight / c
-		kick_y =  - fields.kick_y * particles.mass * particles.weight / c
+		kick_x =  - fields.kick_x * particles.charge * particles.weight / c
+		kick_y =  - fields.kick_y * particles.charge * particles.weight / c
 
 		## apply the kick 
 		particles.px += - kick_x * self.ds
