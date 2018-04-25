@@ -117,7 +117,7 @@ class kinetics_solver_SC2D:
 	def compute_momentum_arg(self,particles):
 
 		## Calculate the square root term in the hamaltonian
-		argumnent = np.sqrt(particles.beta**2 * particles.p_xi **2 - particles.px **2 - particles.py**2 - particles.m_0**2 * c**2)
+		argumnent = np.sqrt(particles.beta**2 * particles.p_xi **2 - particles.px **2 - particles.py**2 - (particles.m_0)**2 * c**2)
 		
 		return argumnent
 
@@ -140,8 +140,8 @@ class kinetics_solver_SC2D:
 		field_solver.compute_kick(fields, particles)
 
 		## compute the full kick
-		kick_x = fields.kick_x * particles.charge * particles.weight / c
-		kick_y = fields.kick_y * particles.charge * particles.weight / c
+		kick_x = fields.kick_x * particles.charge / c
+		kick_y = fields.kick_y * particles.charge / c
 
 		## apply the kick 
 		particles.px += - kick_x * self.ds
