@@ -1,11 +1,13 @@
 import numpy as np
-from scipy.constants import c, mu_0, m_e, m_p
-from scipy.constants import epsilon_0 as e_0
-from scipy.constants import elementary_charge
+from constants import cgs_constants
 from scipy.special import erf
 
 pi = np.pi
 
+## Convert units to cgs from mks
+elementary_charge = cgs_constants['q']
+c = cgs_constants['c']
+m_e = cgs_constants['m_e']
 
 class distribution:
 

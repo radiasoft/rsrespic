@@ -1,12 +1,12 @@
 import numpy as np
-from scipy.constants import c, mu_0, m_e
-from scipy.constants import epsilon_0 as e_0
-from scipy.constants import elementary_charge as q
+from constants import cgs_constants
 from scipy.special import erf
 
 pi = np.pi
 
-
+## Convert units to cgs from mks
+q = cgs_constants['q']
+c = cgs_constants['c'] 
 
 class cartesian_2D:
 

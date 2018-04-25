@@ -1,12 +1,14 @@
 import numpy as np
-from scipy.constants import c, mu_0, m_e
-from scipy.constants import epsilon_0 as e_0
-from scipy.constants import elementary_charge as q
-from scipy.special import erf
+
+from constants import cgs_constants
 from numpy import exp, sin, einsum
 
 pi = np.pi
+q = cgs_constants['q']
+c = cgs_constants['c'] 
 
+
+## Convert units to cgs from mks
 
 class field_solver_2D(object):
 
@@ -179,7 +181,6 @@ class kinetics_solver_FODO_Cell:
 
 		## The first thing is to trasform the longitudional momentum into canaonical coordiantes
 		particles.compute_p_xi()
-
 
 		## This computes the square root term of the hamaltonian that is used in all drifts
 		argumnent = 1. / self.compute_momentum_arg(particles)
