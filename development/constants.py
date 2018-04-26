@@ -9,7 +9,7 @@ cgs_constants = {
 'h_bar':1.0545716e10-27,
 'c':2.99792458e10,
 'k':1.3806504e-16,
-'m_p':1.6726219e-24
+'m_p':1.6726219e-24,
 }
 
 
@@ -22,3 +22,20 @@ def charge_mks_to_cgs(q):
 def charge_cgs_to_mks(q):
 
 	return q / 2997919999.934
+
+
+def SV_to_V(SV):
+
+	return SV*299.792458
+
+def V_to_SV(V):
+
+	return V/299.792458
+
+def SVpercm_to_Vperm(E):
+
+	return 29979.19999934*E
+
+def Vperm_to_SVpercm(E):
+
+	return E/29979.19999934
