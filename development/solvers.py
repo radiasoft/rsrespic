@@ -27,17 +27,17 @@ class field_solver_2D(object):
 		#kx_mat = np.einsum('m, p -> mp', fields.k_x_vector, np.ones(len(particles.x))) 
 		#ky_mat = np.einsum('n, p -> np', fields.k_y_vector, np.ones(len(particles.y)))
 
-		trash, kx_mat = np.meshgrid(particles.x, fields.k_x_vector)
-		trash, ky_mat = np.meshgrid(particles.y, fields.k_y_vector)
+		trash, kx_mat = np.meshgrid(particles.x, fields.k_x_vector) ## 1/cm
+		trash, ky_mat = np.meshgrid(particles.y, fields.k_y_vector) ## 1/cm 
 
-		exp_x = np.exp(1j * kx1) * particles.lambda_twiddle(kx_mat, particles.x_extent)
-		exp_y = np.exp(1j * ky1) * particles.lambda_twiddle(ky_mat, particles.y_extent)
+		exp_x = np.exp(1j * kx1) * particles.lambda_twiddle(kx_mat, particles.x_extent) ## no units
+		exp_y = np.exp(1j * ky1) * particles.lambda_twiddle(ky_mat, particles.y_extent) ## no units
 	
-		ptcl_exponential = np.einsum('mp, np -> mn', exp_x, exp_y) 
+		ptcl_exponential = np.einsum('mp, np -> mn', exp_x, exp_y) ## no units
 
-		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv)
+		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv) / (fields.lambda_y_0 * fields.lambda_x_0) ## no units
 
-		fields.phi = - phi * particles.charge * particles.weight  * 4. * pi / ( c * (particles.gamma ** 2. - 1) )
+		fields.phi = - phi * particles.charge * particles.weight  * 4. * pi / (c * (particles.gamma ** 2. - 1) ) ## statC s / cm
 
 		return 
 
@@ -64,20 +64,22 @@ class field_solver_2D(object):
 		yarray = np.linspace(-ymax, ymax, n_grid)
 		XX, YY = np.meshgrid(xarray, yarray)
 
-		phi = fields.phi / (fields.lambda_y_0 * fields.lambda_x_0)
+		phi = fields.phi 
+		#statcolomb s / cm
 
-		kx4 = np.einsum('m,i -> mi', fields.k_x_vector, xarray)
-		ky4 = np.einsum('n,j -> nj', fields.k_y_vector, yarray)
+		kx4 = np.einsum('m,i -> mi', fields.k_x_vector, xarray) ## no units
+		ky4 = np.einsum('n,j -> nj', fields.k_y_vector, yarray) ## no units
 
-		exp_x = np.exp(-1j * kx4)
-		exp_y = np.exp(-1j * ky4)
+		exp_x = np.exp(-1j * kx4) ## no units
+		exp_y = np.exp(-1j * ky4) ## no units
 
 		#Field components are exp(-i(kxx + kyy))
-		phi_modes = np.einsum('mi, nj -> mnij', exp_x, exp_y)
+		phi_modes = np.einsum('mi, nj -> mnij', exp_x, exp_y) ## no units
 
 		#now multiply by the sigma matrix, component-wise - using shared mn indices
-		phi_vals = np.einsum('mn,mnij->ij',phi, phi_modes)
+		phi_vals = np.einsum('mn,mnij->ij',phi, phi_modes) ## statC s / cm
 
+		# statcolomb s / cm
 		fields.phi_grid = phi_vals - np.min(phi_vals)
 		fields.x_grid = XX
 		fields.y_grid = YY
@@ -87,21 +89,22 @@ class field_solver_2D(object):
 
 	def compute_kick(self, fields, particles):
 
-		phi = fields.phi / (fields.lambda_y_0 * fields.lambda_x_0)
+		phi = fields.phi
+		## statC s / cm
 
-		kx4 = np.einsum('m,i -> mi', fields.k_x_vector, particles.x)
-		ky4 = np.einsum('n,i -> ni', fields.k_y_vector, particles.y)
+		kx4 = np.einsum('m,i -> mi', fields.k_x_vector, particles.x) ## no units
+		ky4 = np.einsum('n,i -> ni', fields.k_y_vector, particles.y) ## no units
 
-		exp_x = np.exp(-1j * kx4)		
-		exp_y = np.exp(-1j * ky4)
+		exp_x = np.exp(-1j * kx4) ## no units
+		exp_y = np.exp(-1j * ky4) ## no units
 
-		kick_modes = np.einsum('mp, np -> mnp', exp_x, exp_y)
+		kick_modes = np.einsum('mp, np -> mnp', exp_x, exp_y) ## no units
 
-		kick_x = np.einsum('mn, m, mnp -> p', phi, -1j * fields.k_x_vector, kick_modes)
-		kick_y = np.einsum('mn, n, mnp -> p', phi, -1j * fields.k_y_vector, kick_modes)
+		kick_x = np.einsum('mn, m, mnp -> p', phi, -1j * fields.k_x_vector, kick_modes) ## statC s / cm^2
+		kick_y = np.einsum('mn, n, mnp -> p', phi, -1j * fields.k_y_vector, kick_modes) ## statC s / cm^2
 
-		fields.kick_x = np.real(kick_x)
-		fields.kick_y = np.real(kick_y)
+		fields.kick_x = np.real(kick_x) ## statC s / cm^2
+		fields.kick_y = np.real(kick_y) ## statC s / cm^2
 
 		return
 
@@ -117,9 +120,9 @@ class kinetics_solver_SC2D:
 	def compute_momentum_arg(self,particles):
 
 		## Calculate the square root term in the hamaltonian
-		argumnent = np.sqrt(particles.beta**2 * particles.p_xi **2 - particles.px **2 - particles.py**2 - (particles.m_0)**2 * c**2)
+		argument = np.sqrt(particles.beta**2 * particles.p_xi **2 - particles.px **2 - particles.py**2 - (particles.m_0 * particles.weight)**2 * c**2)
 		
-		return argumnent
+		return argument
 
 
 	def step(self, particles, fields, field_solver):
@@ -129,30 +132,30 @@ class kinetics_solver_SC2D:
 
 
 		## This computes the square root term of the hamaltonian that is used in all drifts
-		argumnent = 1. / self.compute_momentum_arg(particles)
+		argument = 1. / self.compute_momentum_arg(particles)
 		relativistic_factor = 1. / particles.beta ** 2 - 1. 
 
 		## First half drift
-		particles.x += - particles.px * relativistic_factor * argumnent * self.ds / 2.
-		particles.y += - particles.py * relativistic_factor * argumnent * self.ds / 2.
+		particles.x += - particles.px * relativistic_factor * argument * self.ds / 2.
+		particles.y += - particles.py * relativistic_factor * argument * self.ds / 2.
 
-		field_solver.compute_phi(fields, particles)
-		field_solver.compute_kick(fields, particles)
+		field_solver.compute_phi(fields, particles) 
+		field_solver.compute_kick(fields, particles) ## statC s / cm^2
 
 		## compute the full kick
-		kick_x = fields.kick_x * particles.charge / c
-		kick_y = fields.kick_y * particles.charge / c
+		kick_x = fields.kick_x * particles.charge * particles.weight / c ## statC^2 s^2 / cm^3 
+		kick_y = fields.kick_y * particles.charge * particles.weight / c ## statC^2 s^2 / cm^3 
 
 		## apply the kick 
-		particles.px += - kick_x * self.ds
-		particles.py += - kick_y * self.ds
+		particles.px += - kick_x * self.ds ##statC^2 s^2 / cm^2
+		particles.py += - kick_y * self.ds ##statC^2 s^2 / cm^2
 
 		## recompute relativistic momentum argument with new transverse momenta
-		argumnent = 1. / self.compute_momentum_arg(particles)
+		argument = 1. / self.compute_momentum_arg(particles)
 
 		## second half drift
-		particles.x += - particles.px * relativistic_factor * argumnent * self.ds / 2.
-		particles.y += - particles.py * relativistic_factor * argumnent * self.ds / 2.
+		particles.x += - particles.px * relativistic_factor * argument * self.ds / 2.
+		particles.y += - particles.py * relativistic_factor * argument * self.ds / 2.
 
 
 		return

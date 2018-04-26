@@ -110,7 +110,7 @@ class particles_2D_delta:
 		self.y = distribution.y
 		self.py = distribution.py
 		self.z = distribution.z
-		self.pt = distribution.pz + self.gamma * self.m_0 * c
+		self.pt = distribution.pz + self.gamma * self.m_0 * c * self.weight
 
 	def compute_p_xi(self):
 
@@ -161,7 +161,7 @@ class particles_2D_tent:
 		self.y = distribution.y
 		self.py = distribution.py
 		self.z = distribution.z
-		self.pt = distribution.pz + self.gamma * self.m_0 * c
+		self.pt = distribution.pz + self.gamma * self.m_0 * c * self.weight
 
 
 	def compute_p_xi(self):
