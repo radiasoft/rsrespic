@@ -103,8 +103,8 @@ class field_solver_2D(object):
 		kick_x = np.einsum('mn, m, mnp -> p', phi, -1j * fields.k_x_vector, kick_modes) ## statC s / cm^2
 		kick_y = np.einsum('mn, n, mnp -> p', phi, -1j * fields.k_y_vector, kick_modes) ## statC s / cm^2
 
-		fields.kick_x = np.real(kick_x) ## statC s / cm^2
-		fields.kick_y = np.real(kick_y) ## statC s / cm^2
+		fields.kick_x = np.real(kick_x) * particles.charge * particles.weight / c  ## statC^2 s^2 / cm^3  
+		fields.kick_y = np.real(kick_y) * particles.charge * particles.weight / c  ## statC^2 s^2 / cm^3  
 
 		return
 
@@ -139,15 +139,18 @@ class kinetics_solver_SC2D:
 		particles.x += - particles.px * relativistic_factor * argument * self.ds / 2.
 		particles.y += - particles.py * relativistic_factor * argument * self.ds / 2.
 
+		## compute psi
 		field_solver.compute_phi(fields, particles) 
+
+		## compute the kick
 		field_solver.compute_kick(fields, particles) ## statC s / cm^2
 
-		## compute the full kick
-		kick_x = fields.kick_x * particles.charge * particles.weight / c ## statC^2 s^2 / cm^3 
-		kick_y = fields.kick_y * particles.charge * particles.weight / c ## statC^2 s^2 / cm^3 
+		## get the kick
+		kick_x = fields.kick_x  ## statC^2 s^2 / cm^3  
+		kick_y = fields.kick_y  ## statC^2 s^2 / cm^3 
 
 		## apply the kick 
-		particles.px += - kick_x * self.ds ##statC^2 s^2 / cm^2
+		particles.px += - kick_x * self.ds ##statC^2 s^2 / cm^2 --> This should be statC^2 s / cm^2
 		particles.py += - kick_y * self.ds ##statC^2 s^2 / cm^2
 
 		## recompute relativistic momentum argument with new transverse momenta
