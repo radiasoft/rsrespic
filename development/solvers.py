@@ -30,12 +30,12 @@ class field_solver_2D(object):
 		trash, kx_mat = np.meshgrid(particles.x, fields.k_x_vector) ## 1/cm
 		trash, ky_mat = np.meshgrid(particles.y, fields.k_y_vector) ## 1/cm 
 
-		exp_x = np.exp(1j * kx1) * particles.lambda_twiddle(kx_mat, particles.x_extent) ## no units
-		exp_y = np.exp(1j * ky1) * particles.lambda_twiddle(ky_mat, particles.y_extent) ## no units
+		exp_x = np.exp(1j * kx1) * particles.lambda_twiddle(kx_mat, particles.x_extent) / np.sqrt(fields.lambda_x_0) ## no units
+		exp_y = np.exp(1j * ky1) * particles.lambda_twiddle(ky_mat, particles.y_extent) / np.sqrt(fields.lambda_y_0) ## no units
 	
 		ptcl_exponential = np.einsum('mp, np -> mn', exp_x, exp_y) ## no units
 
-		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv) / (fields.lambda_y_0 * fields.lambda_x_0) ## no units
+		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv) ## no units
 
 		fields.phi = - phi * particles.charge * particles.weight  * 4. * pi / (c * (particles.gamma ** 2 * particles.beta) ) ## statC s / cm
 		
@@ -120,11 +120,11 @@ class field_solver_2D(object):
 
 		kick_modes = np.einsum('mp, np -> mnp', exp_x, exp_y) ## no units
 
-		kick_x = np.einsum('mn, m, mnp -> p', phi, -1j * fields.k_x_vector, kick_modes) ## statC s / cm^2
-		kick_y = np.einsum('mn, n, mnp -> p', phi, -1j * fields.k_y_vector, kick_modes) ## statC s / cm^2
+		grad_psi_x = np.einsum('mn, m, mnp -> p', phi, -1j * fields.k_x_vector, kick_modes) ## statC s / cm^2
+		grad_psi_y = np.einsum('mn, n, mnp -> p', phi, -1j * fields.k_y_vector, kick_modes) ## statC s / cm^2
 
-		fields.kick_x = np.real(kick_x) * particles.charge * particles.weight / (particles.beta * c) ## statC^2 s^2 / cm^3  
-		fields.kick_y = np.real(kick_y) * particles.charge * particles.weight / (particles.beta * c) ## statC^2 s^2 / cm^3  
+		fields.kick_x = np.real(grad_psi_x) * particles.charge * particles.weight / (particles.beta * c) ## statC^2 s^2 / cm^3  
+		fields.kick_y = np.real(grad_psi_y) * particles.charge * particles.weight / (particles.beta * c) ## statC^2 s^2 / cm^3  
 
 		return
 

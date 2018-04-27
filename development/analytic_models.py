@@ -5,6 +5,9 @@ from scipy.constants import elementary_charge as q
 from scipy.special import erf
 from scipy.special import gammainc
 from scipy.special import gamma
+from constants import cgs_constants
+
+
 
 pi = np.pi
 gamma_em = 0.57721566490
@@ -75,6 +78,9 @@ class kv:
 
 def compute_psi(r_0, particles):
 
+		q = cgs_constants['q']
+		c = cgs_constants['c'] 
+
 		r = np.sqrt(particles.x**2 + particles.y**2)
 
 		n0 = particles.N * particles.weight / (pi * r_0 **2)
@@ -88,6 +94,9 @@ def compute_kick_psi(r_0, particles):
 		r = np.sqrt(particles.x**2 + particles.y**2)
 
 		n0 = particles.N * particles.weight / (pi * r_0 **2)
+
+		q = cgs_constants['q']
+		c = cgs_constants['c'] 
 
 		kick_r = 2. * r * particles.charge * n0 * pi / (c * (particles.gamma ** 2 * particles.beta) ) * particles.charge * particles.weight / ( c * particles.beta )
 
