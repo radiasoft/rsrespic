@@ -73,6 +73,29 @@ class kv:
 			(np.log(r) - np.log(self.r_0) + 1) * self.r_0**2 * (r >= self.r_0))
 
 
+def compute_psi(r_0, particles):
+
+		r = np.sqrt(particles.x**2 + particles.y**2)
+
+		n0 = particles.N * particles.weight / (pi * r_0 **2)
+
+		phi_r = ( r**2 * (r < r_0) ) * particles.charge * n0  * pi / (c * (particles.gamma ** 2 * particles.beta) )
+
+		return phi_r
+
+def compute_kick_psi(r_0, particles):
+		
+		r = np.sqrt(particles.x**2 + particles.y**2)
+
+		n0 = particles.N * particles.weight / (pi * r_0 **2)
+
+		kick_r = 2. * r * particles.charge * n0 * pi / (c * (particles.gamma ** 2 * particles.beta) ) * particles.charge * particles.weight / ( c * particles.beta )
+
+		return kick_r	
+
+
+
+
 
 class waterbag:
 
