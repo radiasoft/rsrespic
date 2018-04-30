@@ -19,11 +19,11 @@ class cartesian_2D:
 		k_x_min = 2.0 * pi / self.lambda_x_0 
 		k_y_min = 2.0 * pi / self.lambda_y_0
 
-		k_x_max = 2.0 * pi / L_x_min
-		k_y_max = 2.0 * pi / L_y_min
+		self.k_x_max = 2.0 * pi / L_x_min
+		self.k_y_max = 2.0 * pi / L_y_min
 
-		n_modes_x = int(k_x_max / k_x_min)
-		n_modes_y = int(k_y_max / k_y_min)
+		n_modes_x = int(self.k_x_max / k_x_min)
+		n_modes_y = int(self.k_y_max / k_y_min)
 		
 		self.n_modes_y = n_modes_y * 2.
 		self.n_modes_x = n_modes_x * 2.
