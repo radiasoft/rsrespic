@@ -37,7 +37,7 @@ class field_solver_2D(object):
 
 		phi = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv) ## no units
 
-		fields.phi = - phi * particles.charge * particles.weight  * 4. * pi / (c * (particles.gamma ** 2 * particles.beta) ) ## statC s / cm
+		fields.phi = - phi * particles.charge * particles.weight  * 4. * pi / ((particles.gamma ** 2 * particles.beta) ) ## statC s / cm
 		
 		return 
 
@@ -165,7 +165,7 @@ class kinetics_solver_SC2D:
 		field_solver.compute_kick(fields, particles) ## statC s / cm^2
 
 		## get the kick
-		kick_x = fields.kick_x  ## statC^2 s^2 / cm^3 l  
+		kick_x = fields.kick_x  ## statC^2 s^2 / cm^3 
 		kick_y = fields.kick_y  ## statC^2 s^2 / cm^3 
 
 		## apply the kick 
