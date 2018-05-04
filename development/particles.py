@@ -1,4 +1,5 @@
 import numpy as np
+import constants
 from constants import cgs_constants
 from scipy.special import erf
 
@@ -53,7 +54,7 @@ class distribution:
 		return
 
 
-	def construct_kv(self, r_0 = 1.0, x0 = 0.0, y0 = 0.0):
+	def construct_kv(self, r_0 = 1.0, x0 = 0.0, y0 = 0.0, pr_0 = 0, pth_0 = 0):
 		
 		r = np.random.uniform(0, r_0**2, self.N)
 		theta = np.random.uniform(0, 2*pi, self.N)
@@ -81,7 +82,7 @@ class distribution:
 class particles_2D_delta:
 
 	def __init__(self, distribution, bunch_charge = 1.0, 
-		species_charge = elementary_charge, species_mass = m_e, gamma = 1.01):	
+		species_charge = elementary_charge, species_mass = m_e, K_e = 1.0e6):	
 		
 		self.x_extent = 1.
 		self.y_extent = 1.
@@ -90,11 +91,15 @@ class particles_2D_delta:
 		self.charge = species_charge
 		self.m_0 = species_mass
 
+		self.mc2 = (self.m_0 / 1000.) * (c / 100.) ** 2 / (constants.charge_cgs_to_mks(self.charge))
+
+		self.gamma = K_e / self.mc2 + 1
+
 		self.weight = bunch_charge / species_charge / distribution.N
 
 		self.N = distribution.N
 
-		self.set_gamma(gamma)
+		self.set_gamma(self.gamma)
 		self.initialize_particles(distribution)
 
 
@@ -111,6 +116,9 @@ class particles_2D_delta:
 		self.py = distribution.py
 		self.z = distribution.z
 		self.pt = distribution.pz + self.gamma * self.m_0 * c * self.weight
+
+		self.compute_p_xi()
+
 
 	def compute_p_xi(self):
 
@@ -131,7 +139,7 @@ class particles_2D_delta:
 class particles_2D_tent:
 
 	def __init__(self, distribution, dx_tent = 0.1, dy_tent = 0.1,  bunch_charge = 1.0, 
-		species_charge = elementary_charge, species_mass = m_e, gamma = 1.01):
+		species_charge = elementary_charge, species_mass = m_e, K_e = 1.0e6):
 
 		self.x_extent = dx_tent
 		self.y_extent = dy_tent
@@ -140,11 +148,15 @@ class particles_2D_tent:
 		self.charge = species_charge
 		self.m_0 = species_mass
 
+		self.mc2 = (self.m_0 / 1000.) * (c / 100.) ** 2 / (constants.charge_cgs_to_mks(self.charge))
+
+		self.gamma = K_e / self.mc2 + 1
+
 		self.weight = bunch_charge / species_charge / distribution.N
 
 		self.N = distribution.N
 
-		self.set_gamma(gamma)
+		self.set_gamma(self.gamma)
 		self.initialize_particles(distribution)
 
 
@@ -162,6 +174,8 @@ class particles_2D_tent:
 		self.py = distribution.py
 		self.z = distribution.z
 		self.pt = distribution.pz + self.gamma * self.m_0 * c * self.weight
+
+		self.compute_p_xi()
 
 
 	def compute_p_xi(self):

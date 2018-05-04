@@ -85,7 +85,7 @@ def compute_psi(r_0, particles):
 
 		n0 = particles.N * particles.weight / (pi * r_0 **2)
 
-		phi_r = ( r**2 * (r < r_0) ) * particles.charge * n0  * pi / ( (particles.gamma ** 2 * particles.beta) )
+		phi_r = ( r**2 * (r < r_0) ) * particles.charge * n0  * pi / ( (particles.gamma ** 2) )
 
 		return phi_r
 
@@ -98,7 +98,7 @@ def compute_kick_psi(r_0, particles):
 		q = cgs_constants['q']
 		c = cgs_constants['c'] 
 
-		kick_r = 2. * r * particles.charge * n0 * pi / ( (particles.gamma ** 2 * particles.beta) ) * particles.charge * particles.weight / ( c * particles.beta )
+		kick_r = 2. * r * particles.charge * n0 * pi / ( (particles.gamma ** 2 ) ) * particles.charge * particles.weight / ( c * particles.beta )
 
 		return kick_r	
 

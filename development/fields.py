@@ -46,6 +46,13 @@ class cartesian_2D:
 		self.Ay = 0.0
 		self.Az = 0.0
 
+	def register_solver(self,field_solver):
+
+		self.solver = field_solver
+
+		return
+		
+
 	def write_output(self, fn):
 
 
