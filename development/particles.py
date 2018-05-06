@@ -43,7 +43,6 @@ class distribution:
 		
 		z = np.zeros(len(x))
 		pz = np.zeros(len(x))
-
 		self.x = x
 		self.y = y
 		self.px = px
