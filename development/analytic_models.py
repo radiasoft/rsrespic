@@ -52,6 +52,21 @@ class uniform_gaussian:
 
 		return r,E_r
 
+
+	def compute_psi(self, x, y, gamma):
+
+		""" Convert from caetesian to cylindrical and compute potentials"""
+		r = np.sqrt(x**2 + y**2)
+
+		arg_r = r**2 / (2. * self.sigma_r ** 2)
+
+		phi_r = self.Q_0 * pi / (gamma ** 2 * self.sigma_r ** 2) * 1. / 2. * (np.log( arg_r ) + gamma_inc(arg_r) + gamma_em)
+
+
+		return r, phi_r
+
+
+
 class kv:
 
 	def __init__(self, r_0 = 1.0, Q_0 = 1.0):
