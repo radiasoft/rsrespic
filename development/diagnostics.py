@@ -12,7 +12,8 @@ class bunch_statistics:
         self.step_data = []
 
         self.plot_keys = {'s': 0, 'rms_x': 1, 'rms_xp': 2, 
-            'ex_rms': 3, 'rms_y': 4, 'rms_yp': 5, 'ey_rms': 6}
+            'ex_rms': 3, 'rms_y': 4, 'rms_yp': 5, 'ey_rms': 6, 'r_beam': 7}
+
 
         self.divergence_coordinates = divergence_coordinates
 
@@ -36,17 +37,20 @@ class bunch_statistics:
         xp_rms = np.std(xp)
         yp_rms = np.std(yp)
 
+        r_beam = np.max(np.sqrt(particles.x ** 2 + particles.y **2))
+
         ex = np.sqrt(np.dot(particles.x,particles.x) * np.dot(xp,xp) - np.dot(xp, particles.x)**2) / len(xp)
         ey = np.sqrt(np.dot(particles.y,particles.y) * np.dot(yp,yp) - np.dot(yp, particles.y)**2) / len(yp)
 
-        step_data = [s, x_rms, xp_rms, ex, y_rms, yp_rms, ey]
+        step_data = [s, x_rms, xp_rms, ex, y_rms, yp_rms, ey, r_beam]
 
         self.step_data.append(step_data)
 
 
-    def get_parameters(self, s):
+    def get_parameter(self, key):
+        parameters = np.asarray(self.step_data)
 
-        return s
+        return parameters[:, self.plot_keys[key]]
 
 
 
