@@ -20,13 +20,16 @@ class distribution:
 	def construct_uniform_guassian_2D(self, x0 = 0, y0 =0, xp0 = 0, yp0 = 0,
 			sigma_x = 0, sigma_y = 0, sigma_xp = 0, sigma_yp = 0):
 		
+
+		## note xp amd yp are in radians. 
+
 		sigma_x = sigma_x
 		sigma_y = sigma_y
 		sigma_xp = sigma_xp
 		sigma_yp = sigma_yp
 
 		sigma_xxp = 0.0
-		sigma_xy = 0.0		
+		sigma_xy = 0.0
 		sigma_xyp = 0.0
 		sigma_xpy = 0.0
 		sigma_xpyp = 0.0
@@ -39,38 +42,49 @@ class distribution:
 			[sigma_xy**2,sigma_xpy**2,sigma_y**2,sigma_yyp**2],
 			[sigma_xyp**2,sigma_xpyp**2,sigma_yyp**2,sigma_yp**2]]
 
-		x, px, y, py = np.random.multivariate_normal(mean, cov, self.N).T
+		x, xp, y, yp = np.random.multivariate_normal(mean, cov, self.N).T
 		
 		z = np.zeros(len(x))
 		pz = np.zeros(len(x))
 		self.x = x
 		self.y = y
-		self.px = px
-		self.py = py
+		self.xp = xp
+		self.yp = yp
 		self.z = z
 		self.pz = pz
 
+		self.type = 'gaussian'
 		return
 
 
-	def construct_kv(self, r_0 = 1.0, x0 = 0.0, y0 = 0.0, pr_0 = 0, pth_0 = 0):
+	def construct_kv(self, x_a = 0.1 , x_b = 0.1, y_a = 0.1, y_b = 0.1):
 		
-		r = np.random.uniform(0, r_0**2, self.N)
-		theta = np.random.uniform(0, 2*pi, self.N)
+		self.e_x = np.pi * x_a * x_b / 100.
+		self.e_y = np.pi * y_a * y_b / 100.
 
-		x = np.sqrt(r) * np.cos(theta) + x0
-		y = np.sqrt(r) * np.sin(theta) + y0
+		r_x = np.random.uniform(0, x_a**2, self.N)
+		theta_x = np.random.uniform(0, 2. * np.pi, self.N)
 
-		px = np.zeros(len(x))
-		py = np.zeros(len(x))
-		
+		r_y = np.random.uniform(0, y_a**2, self.N)
+		theta_y = np.random.uniform(0, 2. * np.pi, self.N) 
+
+		x = np.sqrt(r_x) * np.cos(theta_x)
+		xp = np.sqrt(r_x) * np.sin(theta_x) * x_b / x_a
+
+		y = np.sqrt(r_y) * np.sin(theta_y)
+		yp = np.sqrt(r_y) * np.cos(theta_y) * y_b / y_a
+
+		#px = np.zeros(len(x))
+		#py = np.zeros(len(x))
+		self.type = 'KV'
+
 		z = np.zeros(len(x))
 		pz = np.zeros(len(x))
 
 		self.x = x
 		self.y = y
-		self.px = px
-		self.py = py
+		self.xp = xp
+		self.yp = yp
 		self.z = z
 		self.pz = pz
 
@@ -86,13 +100,13 @@ class particles_2D_delta:
 		self.x_extent = 1.
 		self.y_extent = 1.
 
-		self.bunch_chage = bunch_charge
+		self.bunch_charge = bunch_charge
 		self.charge = species_charge
 		self.m_0 = species_mass
 
 		self.mc2 = (self.m_0 / 1000.) * (c / 100.) ** 2 / (constants.charge_cgs_to_mks(self.charge))
 
-		self.gamma = K_e / self.mc2 + 1
+		self.gamma = K_e / self.mc2 + 1.
 
 		self.weight = bunch_charge / species_charge / distribution.N
 
@@ -109,12 +123,20 @@ class particles_2D_delta:
 
 	def initialize_particles(self,distribution):
 
-		self.x = distribution.x
-		self.px = distribution.px
-		self.y = distribution.y
-		self.py = distribution.py
-		self.z = distribution.z
+		self.pz = self.gamma * self.m_0 * c * self.weight * self.beta
 		self.pt = distribution.pz + self.gamma * self.m_0 * c * self.weight
+		self.x = distribution.x
+		self.px = distribution.xp * self.pz
+		self.y = distribution.y
+		self.py = distribution.yp * self.pz
+		self.z = distribution.z
+
+		if distribution.type == 'KV':
+			self.e_x = distribution.e_x
+			self.e_y = distribution.e_y
+		else:
+			self.e_x = np.sqrt(np.dot(distribution.x, distribution.x) * np.dot(distribution.xp, distribution.xp) - np.dot(distribution.x, distribution.xp)) / distribution.N
+			self.e_y = np.sqrt(np.dot(distribution.y, distribution.y) * np.dot(distribution.yp, distribution.yp) - np.dot(distribution.y, distribution.yp)) / distribution.N
 
 		self.compute_p_xi()
 
@@ -167,12 +189,20 @@ class particles_2D_tent:
 
 	def initialize_particles(self,distribution):
 
-		self.x = distribution.x
-		self.px = distribution.px
-		self.y = distribution.y
-		self.py = distribution.py
-		self.z = distribution.z
+		self.pz = self.gamma * self.m_0 * c * self.weight * self.beta
 		self.pt = distribution.pz + self.gamma * self.m_0 * c * self.weight
+		self.x = distribution.x
+		self.px = distribution.xp * self.pz
+		self.y = distribution.y
+		self.py = distribution.yp * self.pz
+		self.z = distribution.z
+
+		if distribution.type == 'KV':
+			self.e_x = distribution.e_x
+			self.e_y = distribution.e_y
+		else:
+			self.e_x = np.sqrt(np.dot(distribution.x, distribution.x) * np.dot(distribution.xp, distribution.xp) - np.dot(distribution.x, distribution.xp)) / distribution.N
+			self.e_y = np.sqrt(np.dot(distribution.y, distribution.y) * np.dot(distribution.yp, distribution.yp) - np.dot(distribution.y, distribution.yp)) / distribution.N
 
 		self.compute_p_xi()
 

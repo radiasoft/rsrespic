@@ -39,6 +39,8 @@ class cartesian_2D:
 
 		k_matrix_sq = k_x_matrix_sq + k_y_matrix_sq
 
+		self.k_matrix_sq = k_matrix_sq
+
 		self.k_sq_inv = 1. / k_matrix_sq 
 
 		self.phi = 0.0

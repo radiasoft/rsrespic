@@ -19,15 +19,15 @@ class field_solver_2D(object):
 	def compute_mode_coefficients(self, fields, particles):
 
 		## Setup the coefficients for the 
-		kx1 = np.einsum('m, p -> mp', fields.k_x_vector, particles.y) 
-		ky1 = np.einsum('n, p -> np', fields.k_y_vector, particles.x) 
+		kx1 = np.einsum('m, p -> mp', fields.k_x_vector, particles.x) 
+		ky1 = np.einsum('n, p -> np', fields.k_y_vector, particles.y) 
 
 		trash, kx_mat = np.meshgrid(particles.x, fields.k_x_vector) ## 1/cm
 		trash, ky_mat = np.meshgrid(particles.y, fields.k_y_vector) ## 1/cm 
 
 		exp_x = np.exp(1j * kx1) * particles.lambda_twiddle(kx_mat, particles.x_extent) / fields.lambda_x_0 ## no units
 		exp_y = np.exp(1j * ky1) * particles.lambda_twiddle(ky_mat, particles.y_extent) / fields.lambda_y_0 ## no units
-	
+
 		ptcl_exponential = np.einsum('mp, np -> mn', exp_x, exp_y) ## no units
 
 		unscalled_coefficients = einsum('xy, xy -> xy', ptcl_exponential, fields.k_sq_inv) ## no units
@@ -38,12 +38,12 @@ class field_solver_2D(object):
 
 
 	def compute_phi_mesh(self, fields,  **kwargs):
-	 	
+
 		if "xmax" in kwargs:
 			xmax = kwargs["xmax"]
 		else:
-		 	xmax = fields.lambda_x_0
-	
+			xmax = fields.lambda_x_0
+
 		if "ymax" in kwargs:
 			ymax = kwargs["ymax"]
 		else:
@@ -146,28 +146,28 @@ class symplectic_maps:
 		kick_y = fields.psi_y * particles.charge  * particles.weight / (particles.beta * c)  ## statC^2 s^2 / cm^3 
 
 		## apply the kick 
-		particles.px += kick_x * ds ##statC^2 s^2 / cm^2 --> This should be statC^2 s / cm^2
-		particles.py += kick_y * ds ##statC^2 s^2 / cm^2
-		particles.pt += 0. 
+		particles.px = particles.px + kick_x * ds ##statC^2 s^2 / cm^2 --> This should be statC^2 s / cm^2
+		particles.py = particles.py + kick_y * ds ##statC^2 s^2 / cm^2
+		particles.pt = particles.pt +  0. 
+
+		#return fields, particles
 
 
 	def drift(self, particles, ds = 0.0):
-
 		## Compute the normalizing factor for the momentum
 		argument = np.sqrt( (particles.beta * particles.p_xi) **2 - particles.px **2 
 			- particles.py**2 - (particles.m_0 * particles.weight * c)**2)
 
 		## compute the rate of drift per s 
-		dx_ds = particles.px * argument 
-		dy_ds = particles.py * argument
+		dx_ds = particles.px / argument 
+		dy_ds = particles.py / argument
 		dz_ds = 0.
 
 		## update particle positoins 
-		particles.x += dx_ds * ds
-		particles.y += dy_ds * ds
-		particles.z += dz_ds * ds
+		particles.x = particles.x + particles.px / argument * ds
+		particles.y = particles.y + particles.py / argument * ds
+		particles.z = particles.z + 0
 
-		return
 
 
 	def thin_quad(self, fields, particles, ds = 0.0, kappa = 0.0):
@@ -185,8 +185,6 @@ class symplectic_maps:
 		particles.px += dpx_ds
 		particles.py += dpy_ds
 		particles.pt += 0. 
-
-
 
 		return
 
