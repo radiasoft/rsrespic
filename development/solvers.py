@@ -19,8 +19,8 @@ class field_solver_2D(object):
 	def compute_mode_coefficients(self, fields, particles):
 
 		## Setup the coefficients for the 
-		kx1 = np.einsum('m, p -> mp', fields.k_x_vector, particles.x) 
-		ky1 = np.einsum('n, p -> np', fields.k_y_vector, particles.y) 
+		kx1 = np.einsum('m, p -> mp', fields.k_x_vector, particles.x)
+		ky1 = np.einsum('n, p -> np', fields.k_y_vector, particles.y)
 
 		trash, kx_mat = np.meshgrid(particles.x, fields.k_x_vector) ## 1/cm
 		trash, ky_mat = np.meshgrid(particles.y, fields.k_y_vector) ## 1/cm 
