@@ -168,7 +168,7 @@ class particles_2D_delta:
 
 		particle_array = np.column_stack([x_out, px_out, y_out, py_out, z_out, pz_out])
 
-		np.savetxt(file_name, particle_array, delimiter = '\t')
+		np.savetxt(file_name, particle_array, delimiter = ' ')
 
 		return
 
@@ -236,6 +236,23 @@ class particles_2D_tent:
 		lambda_twiddle = np.sinc(arg) ** 2
 
 		return lambda_twiddle
+	
+	def write_opal_distribution(self, z_extent = 1.0, file_name = 'opal_input_distribution.txt'):
+		## This will write a file that can be loaded into opal with an extent of 1m 
+
+		## Convert units on particles
+		x_out = self.x / 100.
+		y_out = self.y / 100.
+		z_out = np.random.uniform(0, z_extent, self.N)
+		px_out = self.px / (self.m_0 * c * self.weight)
+		py_out = self.py / (self.m_0 * c * self.weight)
+		pz_out = self.pz / (self.m_0 * c * self.weight) * np.ones(self.N)
+
+		particle_array = np.column_stack([x_out, px_out, y_out, py_out, z_out, pz_out])
+
+		np.savetxt(file_name, particle_array, delimiter = ' ')
+
+		return
 
 
 
