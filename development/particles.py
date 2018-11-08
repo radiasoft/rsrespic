@@ -168,7 +168,7 @@ class particles_2D_delta:
 
 		particle_array = np.column_stack([x_out, px_out, y_out, py_out, z_out, pz_out])
 
-		np.savetxt(file_name, particle_array, delimiter = ' ')
+		np.savetxt(file_name, particle_array, delimiter = ' ', header = str(self.N), comments = '')
 
 		return
 
@@ -250,7 +250,7 @@ class particles_2D_tent:
 
 		particle_array = np.column_stack([x_out, px_out, y_out, py_out, z_out, pz_out])
 
-		np.savetxt(file_name, particle_array, delimiter = ' ')
+		np.savetxt(file_name, particle_array, delimiter = ' ', header = str(self.N), comments = '')
 
 		return
 
