@@ -134,6 +134,7 @@ class particles_2D_delta:
 		if distribution.type == 'KV':
 			self.e_x = distribution.e_x
 			self.e_y = distribution.e_y
+			
 		else:
 			self.e_x = np.sqrt(np.dot(distribution.x, distribution.x) * np.dot(distribution.xp, distribution.xp) - np.dot(distribution.x, distribution.xp)) / distribution.N
 			self.e_y = np.sqrt(np.dot(distribution.y, distribution.y) * np.dot(distribution.yp, distribution.yp) - np.dot(distribution.y, distribution.yp)) / distribution.N

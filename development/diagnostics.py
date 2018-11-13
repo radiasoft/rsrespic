@@ -53,6 +53,17 @@ class bunch_statistics:
         return parameters[:, self.plot_keys[key]]
 
 
+    def save(self, file_name):
+        all_data = np.asarray(self.step_data)
+        np.save(file_name, all_data)
+
+        return
+
+    def load(self, file_name):
+        all_data = np.load(file_name)
+        self.step_data = all_data
+
+        return
 
     def plot(self, x_key, y_key):
         all_data = np.asarray(self.step_data)
