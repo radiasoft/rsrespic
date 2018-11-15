@@ -176,7 +176,7 @@ def rprime(K,emit,r0,rp0,rm):
     return np.sqrt(first + second + third)
 
 
-def calculate_expansion(current, beam_beta, beam_gamma, r0, rp0, 
+def calculate_expansion(current, beam_beta, beam_gamma, r0, rprime0, 
     emit = 1.0e-6, N = 1000, zf = 1.0):
 
     '''Evaluate the expansion of a KV beam envelope in a drift along z-axis, begining at z = 0.
