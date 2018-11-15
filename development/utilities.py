@@ -114,7 +114,7 @@ def round_beam_expansion(z, e_x, e_y, x0, y0, q, gamma, m_0):
 
 
 
-def calc_perveance(I, beam_beta, beam_gama, cn=0):
+def calc_perveance(I, beam_beta, beam_gamma, cn=0):
     '''Calculate the perveance for a proton beam of a given current and particle energy.
     
     Arguments
