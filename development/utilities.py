@@ -4,6 +4,9 @@ import matplotlib
 import scipy.integrate as sint
 import matplotlib.pyplot as plt
 
+import math
+from __future__ import division
+
 import constants
 
 q = constants.cgs_constants['q']
@@ -108,3 +111,106 @@ def round_beam_expansion(z, e_x, e_y, x0, y0, q, gamma, m_0):
     output = sint.odeint(func, init, z)
     
     return output
+
+
+
+def calc_perveance(I, beam_beta, beam_gama, cn=0):
+    '''Calculate the perveance for a proton beam of a given current and particle energy.
+    
+    Arguments
+        - I - current in A
+        - ref - the reference particle for extracting beta and gamma
+        
+        - (optional) charge neutralization factor - default 0
+    '''
+    
+    I0 = 3.13e7 #characteristic current
+    
+    beta = beam_beta
+    gamma = beam_gamma
+    
+    return (I/I0)*(2/beta**3)*(1/gamma**3)
+
+def calc_characteristic_current():
+    '''Return characteristics current for proton beam'''
+    return 4*np.pi*scipy.constants.epsilon_0*scipy.constants.m_p*(scipy.constants.c**3)/scipy.constants.e
+
+
+#Introduce numerical integrators
+
+#2nd Order RK - Ralston Method
+def Ralston(r,z,h,f):
+    k1 = h*f(r)
+    return 0.25*k1 + 0.75*h*f(r+(2/3)*k1)
+
+#4th Order Runge-Kutta
+def RungeKutta4(r,z,h,f):
+    k1 = f(r)
+    k2 = f(r + (h/2)*k1)
+    k3 = f(r + (h/2)*k2)
+    k4 = f(r + h*k3)
+    return h/6*(k1 + 2*k2 +2*k3 + k4)
+
+#function here, which is a function of r and z
+def rprime(K,emit,r0,rp0,rm):
+    '''
+    
+    Returns the slope of the beam envelope (dr/dz) for a given value of emittance,rm, K, and initial conditions.
+    
+    This equation follows from Reisier.
+    
+    Arguments:
+    
+        - r - beam radius (or RMS)
+        - K - perveance
+        - emit - geometric emittance
+        - r0 - initial envelope radius (or RMS)
+        - rp0 - initial slope of envelope (or RMS)
+        
+    '''
+    
+    first = rp0**2 #first term
+    second = (emit**2)*((1./r0**2)-(1./rm**2)) #second term
+    third = 2*K* np.log(rm/r0) / 4
+    
+    return np.sqrt(first + second + third)
+
+
+def calculate_expansion(current, beam_beta, beam_gamma, r0, rp0, 
+    emit = emit, N = 1000, zf = 1.0):
+
+    '''Evaluate the expansion of a KV beam envelope in a drift along z-axis, begining at z = 0.
+    
+    Arguments:
+        - current - beam current in A
+        - reference_particle - synergia object for bunch/lattice reference particle
+        - r0 - initial envelope value (provide RMS for RMS expansion, a for envelope expansion, etc.)
+        - rp0 - initial slope of envelope (must be non-zero, but calculation is not sensitive to small values)
+        
+        - (optional) emit - geometric emittance of beam - default 2.05721258396*1.e-6 (for 0.3 mm-mrad KV beam)
+        - (optional) N - number of steps for integration - default 1000
+        - (optional) zf - final z value (e.g. length of expansion) - default 50.0
+        
+    '''
+    
+    z0 = 0.0 #start
+    ss = (zf-z0)/N #step size
+
+    zpoints = np.linspace(0.0, zf, num=N) #define z values
+    rpoints = [] #empty array for r values
+    
+    #calculate perveance
+    Kp = calc_perveance(current, beam_beta, beam_gamma)
+    
+    #x is r
+    #z is t (what we step up)
+    #f is our function describing the relationship between r and z
+    f = lambda r: rprime(Kp,emit,r0,rprime0,r)
+
+    r,z,dz = r0,z0,ss
+    points = []
+    while z < zf:
+        points.append((z,r))
+        z, r = z+dz, r + Ralston(r,z,dz,f) #incremement
+        
+    return points
