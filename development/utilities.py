@@ -1,3 +1,4 @@
+from __future__ import division
 
 import numpy as np
 import matplotlib
@@ -5,7 +6,6 @@ import scipy.integrate as sint
 import matplotlib.pyplot as plt
 
 import math
-from __future__ import division
 
 import constants
 
