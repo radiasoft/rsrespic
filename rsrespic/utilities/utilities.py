@@ -33,21 +33,25 @@ def compute_system_energy(particles, fields):
     return np.abs(h_drift + h_sc) # + np.sum(es_energy))
 
 
-def plot_beam(beam):
+def plot_rspic_beam(beam):
 
     plt.figure(figsize = (12,12))
     plt.subplot(2,2,1)
-    plt.plot(beam.x, beam.px / beam.pz, 'o')
-    
+    plt.hexbin(beam.x, beam.px / beam.pz, gridsize = 40)
+    plt.title('x-xp')
+
     plt.subplot(2,2,2)
-    plt.plot(beam.y, beam.py / beam.pz, 'o')
-    
+    plt.hexbin(beam.y, beam.py / beam.pz, gridsize = 40)
+    plt.title('y-yp')
+
     plt.subplot(2,2,3)
-    plt.plot(beam.x, beam.y, 'o')
-    
+    plt.hexbin(beam.x, beam.y, gridsize = 40)
+    plt.title('x-y')
+
     plt.subplot(2,2,4)
-    plt.plot(beam.px / beam.pz, beam.py / beam.pz, 'o')
-    
+    plt.hexbin(beam.px / beam.pz, beam.py / beam.pz, gridsize = 40)
+    plt.title('xp-yp')
+
     plt.show()
     
 
