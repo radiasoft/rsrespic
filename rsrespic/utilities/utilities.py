@@ -1,13 +1,17 @@
 from __future__ import division
 
+## Python imports
 import numpy as np
-import matplotlib
-import scipy.integrate as sint
-import matplotlib.pyplot as plt
-
 import math
+import matplotlib
+import matplotlib.pyplot as plt
+import os
+import scipy.integrate as sint
+import subprocess
 
+## respic imports 
 import constants
+
 
 q = constants.cgs_constants['q']
 c = constants.cgs_constants['c']
@@ -214,3 +218,97 @@ def calculate_expansion(current, beam_beta, beam_gamma, r0, rprime0,
         z, r = z+dz, r + Ralston(r,z,dz,f) #incremement
         
     return points
+
+
+
+def read_sdds_columns(file_name, column_names, data_class = None):
+
+    if data_class == None:
+        class sdds_data:
+            def __init__(self,file_name,column_names):
+                self.file_name = file_name
+                self.column_names = column_names
+
+        data_class = sdds_data(file_name,column_names)
+
+
+    for i in range(0,len(column_names)):
+        column = column_names[i]
+        stream = subprocess.Popen("""sdds2stream """+file_name+""" -col="""+column+""" -delimiter=" "
+        """ , shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)   
+        
+
+        column_data = np.asarray(stream.stdout.read().split())
+        error = stream.stderr.read()
+
+        setattr(data_class, column, column_data.astype(float))
+        setattr(data_class, column + '.error', error)
+
+    return data_class
+
+
+
+def plot_twiss_sdds(beam, flag = None):
+    
+    if flag == None:
+        plt.figure(figsize = (12,12))
+        plt.subplot(2,1,1)
+        plt.plot(beam.s, beam.alphax)
+        plt.plot(beam.s, beam.alphay)
+        plt.legend(['alphax', 'alphay'])
+        plt.xlabel('s')
+
+        plt.subplot(2,1,2)
+        plt.plot(beam.s, beam.betax)
+        plt.plot(beam.s, beam.betay)
+        plt.legend(['betax', 'betay'])
+        plt.xlabel('s')
+
+        plt.show()
+
+    if flag == 'Beam':
+        plt.figure(figsize = (12,12))
+        plt.subplot(2,1,1)
+        plt.plot(beam.s, beam.alphaxBeam)
+        plt.plot(beam.s, beam.alphayBeam)
+        plt.legend(['alphax', 'alphay'])
+        plt.xlabel('s')
+
+        plt.subplot(2,1,2)
+        plt.plot(beam.s, beam.betaxBeam)
+        plt.plot(beam.s, beam.betayBeam)
+        plt.legend(['betax', 'betay'])
+        plt.xlabel('s')
+
+        plt.show()
+
+
+def plot_elegant_beam(beam):
+
+    plt.figure(figsize = (16,16))
+    plt.subplot(3,3,1)
+    plt.hexbin(beam.x, beam.xp, gridsize = 40)#, 'o')
+    plt.title('x-xp')
+
+    plt.subplot(3,3,2)
+    plt.hexbin(beam.y, beam.yp, gridsize = 40)#,'o')
+    plt.title('y-yp')
+
+    plt.subplot(3,3,3)
+    plt.hexbin(beam.x, beam.y, gridsize = 40)#,'o')
+    plt.title('x-y')
+
+    plt.subplot(3,3,4)
+    plt.hexbin(beam.xp, beam.yp, gridsize = 40)#, 'o')
+    plt.title('xp-yp')
+
+    plt.subplot(3,3,5)
+    plt.hexbin(beam.x, beam.yp, gridsize = 40)#,'o')
+    plt.title('x-yp')
+
+    plt.subplot(3,3,6)
+    plt.hexbin(beam.y, beam.xp, gridsize = 40)#, 'o')
+    plt.title('y-xp')
+    plt.show()
+
+    return
