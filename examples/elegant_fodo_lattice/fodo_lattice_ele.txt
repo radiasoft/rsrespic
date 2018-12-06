@@ -1,0 +1,99 @@
+!
+! Toy lattice for computing space-charge tune shift
+
+&change_particle
+       name = "proton"
+&end
+
+&run_setup
+        lattice = fodo_lattice.lte,
+        default_order = 2,
+        use_beamline = "L1",
+        p_central = p_central_param,
+&end
+
+&run_control &end
+
+&twiss_output
+        matched = 0,
+        beta_x = beta_x_param,
+        alpha_x = alpha_x_param,
+        beta_y = beta_x_param,
+        alpha_y = alpha_x_param, 
+        output_at_each_step = 1,
+&end
+
+&optimization_setup
+       mode = "minimize", method = "simplex",
+       tolerance =1e-10, log_file = %s.log, n_passes = 50, n_evaluations = 1000
+&end
+
+&optimization_term term = "betax beta_x_param 1e-4 sene" &end
+&optimization_term term = "betay beta_y_param 1e-4 sene" &end
+&optimization_term term = "betax betay 1e-1 sene" &end
+&optimization_term term = "alphax alpha_x_param 1e-5 sene" &end
+&optimization_term term = "alphay alpha_y_param 1e-5 sene" &end
+
+&optimization_variable
+  name = Q1, item=K1, step_size=1., lower_limit=-50000000, upper_limit=50000000 &end
+&optimization_variable
+  name = Q2, item=K1, step_size=1., lower_limit=-50000000, upper_limit=50000000 &end
+&optimization_variable
+  name = Q3, item=K1, step_size=1., lower_limit=-50000000, upper_limit=50000000 &end
+&optimization_variable
+  name = Q4, item=K1, step_size=1., lower_limit=-50000000, upper_limit=50000000 &ends
+
+
+&bunched_beam
+&end
+
+&optimize 
+  summarize_setup=1 
+&end
+
+&save_lattice filename = fodo_lattice.fit &end
+
+&change_particle
+       name = "proton"
+&end
+
+
+&run_setup
+        lattice = fodo_lattice.fit,
+        default_order = 2,
+        use_beamline = "L1",
+        p_central = p_central_param,
+        sigma = matched_fodo_lattice.sig, 
+        output = matched_fodo_lattice.out,
+&end
+
+&run_control &end
+
+&twiss_output
+        matched = 0,
+        beta_x = beta_x_param,
+        alpha_x = alpha_x_param,
+        beta_y = beta_x_param,
+        alpha_y = alpha_x_param, 
+        output_at_each_step = 1,
+        filename = matched_fodo_lattice.twi
+&end
+
+&bunched_beam
+    bunch = matched_fodo_lattice.bun
+    n_particles_per_bunch = 10000;
+    beta_x = beta_x_param,
+    alpha_x = alpha_x_param,
+    emit_x = emit_x_param,
+    beta_y = beta_x_param,
+    alpha_y = alpha_x_param, 
+    emit_y = emit_y_param,
+    Po = p_central_param,
+    enforce_rms_values[0] = 1,1,1,
+    distribution_cutoff[0] = 4, 4, 4,
+    distribution_type[0] = "gaussian","gaussian","gaussian"
+&end
+
+&track
+&end
+
