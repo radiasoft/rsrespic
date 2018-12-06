@@ -1,11 +1,11 @@
 import numpy as np
 
-from constants import cgs_constants
+from rsrespic.utilities import constants 
 from numpy import exp, sin, einsum
 
 pi = np.pi
-q = cgs_constants['q']
-c = cgs_constants['c'] 
+q = constants.cgs_constants['q']
+c = constants.cgs_constants['c'] 
 
 
 ## Convert units to cgs from mks
@@ -187,65 +187,5 @@ class symplectic_maps:
 		particles.pt += 0. 
 
 		return
-
-
-
-
-
-
-## This class is now obselete
-
-class kinetics_solver_SC2D:
-
-	def __init__(self, ds = 1.0e-2):
-
-		self.ds = ds
-
-
-	def compute_momentum_arg(self,particles):
-
-		## Calculate the square root term in the hamaltonian
-		argument = np.sqrt( (particles.beta * particles.p_xi) **2 - particles.px **2 - particles.py**2 - (particles.m_0 * particles.weight * c)**2)
-		
-		return argument
-
-
-	def step(self, particles, fields, field_solver):
-
-		## The first thing is to trasform the longitudional momentum into canaonical coordiantes
-		particles.compute_p_xi()
-
-		## This computes the square root term of the hamaltonian that is used in all drifts
-		argument = 1. / self.compute_momentum_arg(particles)
-		#relativistic_factor = 1. / (particles.beta ** 2) - 1. 
-
-		## First half drift
-		particles.x += particles.px * argument * self.ds / 2. #/ particles.weight
-		particles.y += particles.py * argument * self.ds / 2. #/ particles.weight
-
-		## compute psi
-		field_solver.compute_mode_coefficients(fields, particles) 
-
-		## compute the kick
-		field_solver.compute_grad_psi(fields, particles) ## statC s / cm^2
-
-		## compute the kick 
-		kick_x = fields.psi_x * particles.charge  * particles.weight / (particles.beta * c)  ## statC^2 s^2 / cm^3 
-		kick_y = fields.psi_y * particles.charge  * particles.weight / (particles.beta * c)  ## statC^2 s^2 / cm^3 
-
-		## apply the kick 
-		particles.px += kick_x * self.ds ##statC^2 s^2 / cm^2 --> This should be statC^2 s / cm^2
-		particles.py += kick_y * self.ds ##statC^2 s^2 / cm^2
-
-		## recompute relativistic momentum argument with new transverse momenta
-		argument = 1. / self.compute_momentum_arg(particles)
-
-		## second half drift
-		particles.x += particles.px * argument * self.ds / 2.  #/ particles.weight
-		particles.y += particles.py * argument * self.ds / 2. #/ particles.weight
-
-
-		return
-
 
 

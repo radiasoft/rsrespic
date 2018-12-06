@@ -1,12 +1,7 @@
 import numpy as np
-from constants import cgs_constants
-from scipy.special import erf
 
 pi = np.pi
 
-## Convert units to cgs from mks
-q = cgs_constants['q']
-c = cgs_constants['c'] 
 
 class cartesian_2D:
 
@@ -58,7 +53,7 @@ class cartesian_2D:
 	def write_output(self, fn):
 
 
-		return 
+		return
 		
 
 		

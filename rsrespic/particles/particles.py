@@ -18,159 +18,290 @@
 #
 
 import numpy as np
-from scipy.constants import m_e as me_mks
-from scipy.constants import c as c_mks
-
-# Set the default mass and charge for an electron
-m = me_mks*1.e3 #cgs
-q = 4.80320451e-10 #esu 1.*e
-c = c_mks*1.e2 #cgs
+from rsrespic.utilities import constants
 
 
-class Particles(object):
+pi = np.pi
 
-    def __init__(self, n_particles, charge, mass, weight, **kwargs):
-
-        """
-        Class that stores the particle data and can compute the particle ensemble quantities
-
-        Arguments
-        ----------
-            n_total (int) : total number of macroparticles across all processors
-
-            n_particles (int) : number of macroparticles on local processor
-
-            charge float (float) : charge of the physical species in units e
-
-            mass: float (grams) : mass of the physical species
-
-            weight float : number of particles per macroparticle
-
-            shape: string (optional): specifying the particle shape function: defaults to tent function for now
-
-            species_name string (optional) name of the particle species
-        """
+## Convert units to cgs from mks
+elementary_charge = constants.cgs_constants['q']
+c = constants.cgs_constants['c']
+m_e = constants.cgs_constants['m_e']
 
 
-        self.n_total = n_particles
-        self.np = n_particles
+class distribution:
 
-        if kwargs.__contains__('n_total'):
-            self.n_total = kwargs['n_total']
+    def __init__(self, N = 0):
 
-        if kwargs.__contains__('species_name'):
-            self.species_name = kwargs['species_name']
+        self.N = N
 
-        #dynamical quantities
-        self.x = np.zeros(n_particles)
-        self.y = np.zeros(n_particles)
-        self.z = np.zeros(n_particles)
-        self.px = np.zeros(n_particles)
-        self.py = np.zeros(n_particles)
-        self.pz = np.zeros(n_particles)
+    
+    def construct_uniform_guassian_2D(self, x0 = 0, y0 =0, xp0 = 0, yp0 = 0,
+            sigma_x = 0, sigma_y = 0, sigma_xp = 0, sigma_yp = 0):
+        
 
-        self.gamma = np.zeros(n_particles)
-        self.gamma_mc = np.zeros(n_particles)
-
-        self.weight = weight * np.ones(n_particles)
-
-        self.charge = charge*q
-        self.mass = mass
-
-        self.qOc = (self.charge / c) * np.ones(n_particles)
-        self.mc = (self.mass * c) * np.ones(n_particles)
-
-
-        if kwargs.__contains__('shape'):
-            self.shape = kwargs['shape']
-        else:
-            self.shape = 'delta' #'tent'
-
-
-    def add_particles(self, positions, momenta, weights=None, IDs=None):
-        '''
-        Initialize bunch of particles. Overwrite position and momentum arrays
-
-        Arguments:
-            positions (ndarray): array of positions - [x, y, z]
-
-            momenta (ndarray): array of momenta - [px, py, pz]
-
-            weights (Optional[ndarray]): array of weights- [wx,wy,wz]
-
-            IDs (Optional[ndarray]): array of particle IDs - length # of particles
-
-        '''
-
-        if not type(positions) == 'ndarray':
-            positions = np.asarray(positions)
-        if not type(momenta) == 'ndarray':
-            momenta = np.asarray(momenta)
-        if not positions.shape[0] == momenta.shape[0]:
-            print "Position and momentum arrays have unequal lengths"
-            raise
-
-        # Position quantities
-        self.x = positions[:, 0]
-        self.y = positions[:, 1]
-        self.z = positions[:, 2]
-
-        self.num_particles = len(self.x)
-
-        # initialize particle IDs
-        if not IDs is None:
-            if len(IDs) == self.num_particles:
-                self.IDs = IDs
-            else:
-                print "Number of particle IDs differs from number of particles"
-                raise
-        else:
-            self.IDs = np.arange(self.num_particles) + 1
-
-        # initialize weights
-        if weights is None:
-            self.weights = np.ones(self.num_particles)
-        elif not type(weights) == 'ndarray':
-            weights = np.asarray(weights)
-            if len(weights) == self.num_particles:
-                self.weights = weights
-            else:
-                print "Number of particle weights differs from number of particles"
-                raise
-
-        # Charge and mass quantities - weighted
-        #self.mass = self.weights * self.mass
-        self.qOc = self.weights * self.q0c
-        self.mc = self.weights * self.mc
-
-        # Momentum quantities - weighted
-        self.px = self.weights * momenta[:, 0]
-        self.py = self.weights * momenta[:, 1]
-        self.pz = self.weights * momenta[:, 2]
-
-    def construct_gaussian(self, sigma_x=1.0, sigma_y=1.0):
+        ## note xp amd yp are in radians. 
 
         sigma_x = sigma_x
         sigma_y = sigma_y
-        sigma_xp = 0.01
-        sigma_yp = 0.01
+        sigma_xp = sigma_xp
+        sigma_yp = sigma_yp
 
-        sigma_xxp = 0.0005
-        sigma_xy = 0.0000
-        sigma_xyp = 0.0000
-        sigma_xpy = 0.0000
-        sigma_xpyp = 0.0000
-        sigma_yyp = 0.0000
+        sigma_xxp = 0.0
+        sigma_xy = 0.0
+        sigma_xyp = 0.0
+        sigma_xpy = 0.0
+        sigma_xpyp = 0.0
+        sigma_yyp = 0.0
+            
+        mean = [x0, xp0, y0, yp0]
 
-        mean = [0, 0, 0, 0]
+        cov = [[sigma_x**2, sigma_xxp**2 , sigma_xy**2 ,sigma_xyp**2],
+            [sigma_xxp**2,sigma_xp**2, sigma_xpy**2 ,sigma_xpyp**2],
+            [sigma_xy**2,sigma_xpy**2,sigma_y**2,sigma_yyp**2],
+            [sigma_xyp**2,sigma_xpyp**2,sigma_yyp**2,sigma_yp**2]]
 
-        cov = [[sigma_x ** 2, sigma_xxp ** 2, sigma_xy ** 2, sigma_xyp ** 2],
-               [sigma_xxp ** 2, sigma_xp ** 2, sigma_xpy ** 2, sigma_xpyp ** 2],
-               [sigma_xy ** 2, sigma_xpy ** 2, sigma_y ** 2, sigma_yyp ** 2],
-               [sigma_xyp ** 2, sigma_xpyp ** 2, sigma_yyp ** 2, sigma_yp ** 2]]
+        x, xp, y, yp = np.random.multivariate_normal(mean, cov, self.N).T
+        
+        z = np.zeros(len(x))
+        pz = np.zeros(len(x))
+        self.x = x
+        self.y = y
+        self.xp = xp
+        self.yp = yp
+        self.z = z
+        self.pz = pz
 
-        x, px, y, py = np.random.multivariate_normal(mean, cov, self.np).T
+        self.type = 'gaussian'
+        return
+
+
+    def construct_kv(self, x_a = 0.1 , x_b = 0.1, y_a = 0.1, y_b = 0.1):
+        
+        self.e_x = np.pi * x_a * x_b / 100.
+        self.e_y = np.pi * y_a * y_b / 100.
+
+        r_x = np.random.uniform(0, x_a**2, self.N)
+        theta_x = np.random.uniform(0, 2. * np.pi, self.N)
+
+        r_y = np.random.uniform(0, y_a**2, self.N)
+        theta_y = np.random.uniform(0, 2. * np.pi, self.N) 
+
+        x = np.sqrt(r_x) * np.cos(theta_x)
+        xp = np.sqrt(r_x) * np.sin(theta_x) * x_b / x_a
+
+        y = np.sqrt(r_y) * np.sin(theta_y)
+        yp = np.sqrt(r_y) * np.cos(theta_y) * y_b / y_a
+
+        #px = np.zeros(len(x))
+        #py = np.zeros(len(x))
+        self.type = 'KV'
+
+        z = np.zeros(len(x))
+        pz = np.zeros(len(x))
 
         self.x = x
         self.y = y
-        #self.charge = self.w * np.ones(len(x))
+        self.xp = xp
+        self.yp = yp
+        self.z = z
+        self.pz = pz
+
+        return
+
+    def import_from_file(self, fn = None):
+
+        #load a transverse distribution from file with cordinates
+        #x, xp, y, yp in m and rad respectively, conversion to cm happens
+        # in this function 
+
+        if fn == None:
+            print 'error, no file name'
+
+        else:
+
+            bunch_data = np.loadtxt(fn, delimiter = ',')
+            row, col = bunch_data.shape
+            if col != 4:
+                print 'error, wrong file format'
+
+            else:
+                self.x = bunch_data[:,0] * 100.
+                self.xp = bunch_data[:,1]
+                self.y = bunch_data[:,2] * 100.
+                self.yp = bunch_data[:,3]
+                self.z = np.zeros(len(self.x))
+                self.pz = np.zeros(len(self.x))
+
+        self.N = len(self.x)
+        self.type = 'imported'
+
+
+
+
+class particles_2D_delta:
+
+    def __init__(self, distribution, bunch_charge = 1.0, 
+        species_charge = elementary_charge, species_mass = m_e, K_e = 1.0e6):   
+        
+        self.x_extent = 1.
+        self.y_extent = 1.
+
+        self.bunch_charge = bunch_charge
+        self.charge = species_charge
+        self.m_0 = species_mass
+
+        self.mc2 = (self.m_0 / 1000.) * (c / 100.) ** 2 / (constants.charge_cgs_to_mks(self.charge))
+
+        self.gamma = K_e / self.mc2 + 1.
+
+        self.weight = bunch_charge / species_charge / distribution.N
+
+        self.N = distribution.N
+
+        self.set_gamma(self.gamma)
+        self.initialize_particles(distribution)
+
+
+    def set_gamma(self,gamma):
+
+        self.gamma = gamma
+        self.beta = np.sqrt( 1. - 1. / gamma **2 )
+
+    def initialize_particles(self,distribution):
+
+        self.pz = self.gamma * self.m_0 * c * self.weight * self.beta
+        self.pt = distribution.pz + self.gamma * self.m_0 * c * self.weight
+        self.x = distribution.x
+        self.px = distribution.xp * self.pz
+        self.y = distribution.y
+        self.py = distribution.yp * self.pz
+        self.z = distribution.z
+
+        if distribution.type == 'KV':
+            self.e_x = distribution.e_x
+            self.e_y = distribution.e_y
+            
+        else:
+            self.e_x = np.sqrt(np.dot(distribution.x, distribution.x) * np.dot(distribution.xp, distribution.xp) - np.dot(distribution.x, distribution.xp)) / distribution.N
+            self.e_y = np.sqrt(np.dot(distribution.y, distribution.y) * np.dot(distribution.yp, distribution.yp) - np.dot(distribution.y, distribution.yp)) / distribution.N
+
+        self.compute_p_xi()
+
+
+    def compute_p_xi(self):
+
+        self.p_xi = self.pt / self.beta
+
+        return
+
+
+    def lambda_twiddle(self, k_matrix, extent):
+        
+        row,col = k_matrix.shape
+
+        return np.ones(k_matrix.shape)
+
+
+    def write_opal_distribution(self, z_extent = 1.0, file_name = 'opal_input_distribution.txt'):
+        ## This will write a file that can be loaded into opal with an extent of 1m 
+
+        ## Convert units on particles
+        x_out = self.x / 100.
+        y_out = self.y / 100.
+        z_out = np.random.uniform(0, z_extent, self.N)
+        px_out = self.px / (self.m_0 * c * self.weight)
+        py_out = self.py / (self.m_0 * c * self.weight)
+        pz_out = self.pz / (self.m_0 * c * self.weight) * np.ones(self.N)
+
+        particle_array = np.column_stack([x_out, px_out, y_out, py_out, z_out, pz_out])
+
+        np.savetxt(file_name, particle_array, delimiter = ' ', header = str(self.N), comments = '')
+
+        return
+
+
+
+class particles_2D_tent:
+
+    def __init__(self, distribution, dx_tent = 0.1, dy_tent = 0.1,  bunch_charge = 1.0, 
+        species_charge = elementary_charge, species_mass = m_e, K_e = 1.0e6):
+
+        self.x_extent = dx_tent
+        self.y_extent = dy_tent
+        
+        self.bunch_chage = bunch_charge
+        self.charge = species_charge
+        self.m_0 = species_mass
+
+        self.mc2 = (self.m_0 / 1000.) * (c / 100.) ** 2 / (constants.charge_cgs_to_mks(self.charge))
+
+        self.gamma = K_e / self.mc2 + 1
+
+        self.weight = bunch_charge / species_charge / distribution.N
+
+        self.N = distribution.N
+
+        self.set_gamma(self.gamma)
+        self.initialize_particles(distribution)
+
+
+    def set_gamma(self,gamma):
+
+        self.gamma = gamma
+        self.beta = np.sqrt( 1. - 1. / gamma **2 )
+
+
+    def initialize_particles(self,distribution):
+
+        self.pz = self.gamma * self.m_0 * c * self.weight * self.beta
+        self.pt = distribution.pz + self.gamma * self.m_0 * c * self.weight
+        self.x = distribution.x
+        self.px = distribution.xp * self.pz
+        self.y = distribution.y
+        self.py = distribution.yp * self.pz
+        self.z = distribution.z
+
+        if distribution.type == 'KV':
+            self.e_x = distribution.e_x
+            self.e_y = distribution.e_y
+        else:
+            self.e_x = np.sqrt(np.dot(distribution.x, distribution.x) * np.dot(distribution.xp, distribution.xp) - np.dot(distribution.x, distribution.xp)) / distribution.N
+            self.e_y = np.sqrt(np.dot(distribution.y, distribution.y) * np.dot(distribution.yp, distribution.yp) - np.dot(distribution.y, distribution.yp)) / distribution.N
+
+        self.compute_p_xi()
+
+
+    def compute_p_xi(self):
+
+        self.p_xi = self.pt / self.beta
+
+        return
+
+
+    def lambda_twiddle(self, k, tent_width):
+
+        arg = k * tent_width / (2. * pi) 
+ 
+        lambda_twiddle = np.sinc(arg) ** 2
+
+        return lambda_twiddle
+    
+    def write_opal_distribution(self, z_extent = 1.0, file_name = 'opal_input_distribution.txt'):
+        ## This will write a file that can be loaded into opal with an extent of 1m 
+
+        ## Convert units on particles
+        x_out = self.x / 100.
+        y_out = self.y / 100.
+        z_out = np.random.uniform(0, z_extent, self.N)
+        px_out = self.px / (self.m_0 * c * self.weight)
+        py_out = self.py / (self.m_0 * c * self.weight)
+        pz_out = self.pz / (self.m_0 * c * self.weight) * np.ones(self.N)
+
+        particle_array = np.column_stack([x_out, px_out, y_out, py_out, z_out, pz_out])
+
+        np.savetxt(file_name, particle_array, delimiter = ' ', header = str(self.N), comments = '')
+
+        return
+
+

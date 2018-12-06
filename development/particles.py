@@ -1,7 +1,6 @@
 import numpy as np
 import constants
-from constants import cgs_constants
-from scipy.special import erf
+from respic.utilities import constants
 
 pi = np.pi
 
@@ -90,6 +89,34 @@ class distribution:
 
 		return
 
+	def import_from_file(self, fn = None):
+
+		#load a transverse distribution from file with cordinates
+		#x, xp, y, yp in m and rad respectively, conversion to cm happens
+		# in this function 
+
+		if fn == None:
+			print 'error, no file name'
+
+		else:
+
+			bunch_data = np.loadtxt(fn, delimiter = ',')
+			row, col = bunch_data.shape
+			if col != 4:
+				print 'error, wrong file format'
+
+			else:
+				self.x = bunch_data[:,0] * 100.
+				self.xp = bunch_data[:,1]
+				self.y = bunch_data[:,2] * 100.
+				self.yp = bunch_data[:,3]
+				self.z = np.zeros(len(self.x))
+				self.pz = np.zeros(len(self.x))
+
+		self.N = len(self.x)
+		self.type = 'imported'
+
+
 
 
 class particles_2D_delta:
@@ -172,6 +199,8 @@ class particles_2D_delta:
 		np.savetxt(file_name, particle_array, delimiter = ' ', header = str(self.N), comments = '')
 
 		return
+
+
 
 class particles_2D_tent:
 
