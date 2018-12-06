@@ -177,9 +177,9 @@ class symplectic_maps:
 		dy_ds = 0.
 		dz_ds = 0.
 
-		## assume a positron convention
-		dpx = kappa * particles.x * ds
-		dpy = - kappa * particles.y * ds
+		## assume a positron convention here kappa is the same as elegant K1
+		dpx = kappa * particles.x * ds * (particles.pz / 10000.)
+		dpy = - kappa * particles.y * ds * (particles.pz / 10000.)
 		dpz = 0.
 
 		particles.px += dpx
