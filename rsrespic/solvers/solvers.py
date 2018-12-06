@@ -178,8 +178,8 @@ class symplectic_maps:
 		dz_ds = 0.
 
 		## assume a positron convention
-		dpx_ds = kappa * particles.x 
-		dpy_ds = - kappa * particles.y
+		dpx_ds = kappa * particles.x * particles.weight
+		dpy_ds = - kappa * particles.y * particles.weight
 		dpz_ds = 0.
 
 		particles.px += dpx_ds * ds
