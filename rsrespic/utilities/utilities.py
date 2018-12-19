@@ -251,6 +251,31 @@ def read_sdds_columns(file_name, column_names, data_class = None):
     return data_class
 
 
+def read_sdds_parameter(file_name, parameter_names, data_class = None):
+
+    if data_class == None:
+        class sdds_data:
+            def __init__(self, file_name, parameter_names):
+                self.file_name = file_name
+                self.parameter_names = parameter_names
+
+        data_class = sdds_data(file_name, parameter_names)
+
+
+    for i in range(0,len(parameter_names)):
+        parameter = parameter_names[i]
+        stream = subprocess.Popen("""sdds2stream """+file_name+""" -parameter="""+parameter+""" -delimiter=" "
+        """ , shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)   
+        
+
+        parameter_data = np.asarray(stream.stdout.read().strip())
+        error = stream.stderr.read()
+
+        setattr(data_class, parameter, parameter_data.astype(float))
+        setattr(data_class, parameter + '.error', error)
+
+    return data_class
+
 
 def plot_twiss_sdds(beam, flag = None):
     
@@ -316,3 +341,20 @@ def plot_elegant_beam(beam):
     plt.show()
 
     return
+
+
+def compute_tunes(beam, number_of_turns):
+    #this is to compute the tune from a elegant track
+
+    try: 
+
+        phi_x = np.trapz(1. / beam.betaxBeam, x = beam.s) / number_of_turns
+        phi_y = np.trapz(1. / beam.betayBeam, x = beam.s) / number_of_turns
+
+        nux = 1. / (2. * np.pi) * phi_x
+        nuy = 1. / (2. * np.pi) * phi_y
+
+    except:
+        'something went wrong, check that your inputs are correct'
+
+    return nux, nuy

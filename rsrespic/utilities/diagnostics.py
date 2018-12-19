@@ -59,6 +59,24 @@ class bunch_statistics:
         self.step_data.append(step_data)
 
 
+    def compute_tunes(self, number_of_turns):
+        
+        try: 
+            s = self.get_parameter('s')
+            beta_x = self.get_parameter('beta_x')
+            beta_y = self.get_parameter('beta_y')
+
+            phi_x = np.trapz(1. / beta_x, x = s / 100.) / number_of_turns
+            phi_y = np.trapz(1. / beta_y, x = s / 100.) / number_of_turns
+
+            self.nux = 1. / (2. * np.pi) * phi_x
+            self.nuy = 1. / (2. * np.pi) * phi_y
+
+        except:
+            print 'something went wrong, check that you have run a simulation first'
+
+        return
+
     def get_parameter(self, key):
         parameters = np.asarray(self.step_data)
 
