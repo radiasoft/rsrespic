@@ -65,9 +65,12 @@
         p_central = p_central_param,
         sigma = matched_fodo_lattice.sig, 
         output = matched_fodo_lattice.out,
+        wrap_around = 0,
 &end
 
-&run_control &end
+&run_control 
+        n_passes = number_of_turns,
+&end
 
 &twiss_output
         matched = 0,
