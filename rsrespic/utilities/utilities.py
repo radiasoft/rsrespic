@@ -92,29 +92,30 @@ def plot_rs_beam(points):
 
 
 
-def round_beam_expansion(z, e_x, e_y, x0, y0, q, gamma, m_0):
+def round_beam_expansion(z, e, r0, q, gamma, m_0):
     
+    c = 299792458.
+    q = 1.60217622e-19
+
     beta = np.sqrt(1. - 1./ gamma **2)
     
-    I = q * beta * c / 100. 
+    I = q * beta * c
     
-    I0 = 4 * np.pi * 8.85e-12 * (c/100.) ** 3 * (m_0 / 1000.) / (1.602e-19) 
+    I0 = 4 * np.pi * 8.85e-12 * (c) ** 3 * (m_0) / (1.602e-19) 
     
     K = I * 2. / (I0 * (beta **3) * (gamma **3))
 
     def func(E, z):
         
-        x = E[0]
-        xp = E[1]
-        y = E[2]
-        yp = E[3]
+        r = E[0]
+        rp = E[1]
+
         
-        xpp = 2 * K / (x + y) + e_x**2 / x**3
-        ypp = 2 * K / (x + y) + e_y**2 / y**3
+        rpp = K / r + e**2 / r**3
         
-        return np.asarray([xp, xpp, yp, ypp])
+        return np.asarray([rp, rpp])
     
-    init = np.asarray([x0, 0, y0, 0])
+    init = np.asarray([r0, 0])
     
     output = sint.odeint(func, init, z)
     
