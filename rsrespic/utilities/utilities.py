@@ -91,16 +91,14 @@ def plot_rs_beam(points):
     return
 
 
-
 def round_beam_expansion(z, e, r0, I, gamma, m_0):
     
     c = 299792458.
     q = 1.60217622e-19
 
     beta = np.sqrt(1. - 1./ gamma **2)
-       
-    I0 = 4 * np.pi * 8.85e-12 * (c) ** 3 * (m_0) / (q) 
     
+    I0 = 4 * np.pi * 8.85e-12 * (c) ** 3 * (m_0 / 1000.) / (q) 
     K = I * 2. / (I0 * (beta **3) * (gamma **3))
 
     def func(E, z):
