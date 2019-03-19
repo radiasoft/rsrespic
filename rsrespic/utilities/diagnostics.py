@@ -1,6 +1,32 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import h5py as h5
+
+class particle_dumper: 
+
+    def __init__(self, file_name = 'particle_coordinates.h5')
+    
+        self.fn = file_name
+        self.hf = h5.File(self.fn, 'w')
+
+    def dump(self, step, particles):
+        data_set_name = 'step_' + str(step)
+
+        x = particles.x / 100.
+        y = particles.y / 100.
+        xp = particles.px / particles.pz
+        yp = particles.py / particles.pz
+        
+        array_data = np.column_stack([x, xp, y, yp])
+        
+        self.hf.create_dataset(data_set_name, array_data)
+        return
+
+    def close(self):
+        self.hf.close()
+        return
+        
 
 
 class bunch_statistics:
