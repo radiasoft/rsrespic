@@ -1,6 +1,6 @@
 ### rsrespic
 
-Python project for relativistic electrostatic PIC
+Python project for relativistic symplectic PIC
 
 Learn more at https://github.com/radiasoft/rsrespic.
 
