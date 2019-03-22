@@ -186,6 +186,13 @@ class symplectic_maps:
 		particles.py += dpy
 		particles.pt += 0. 
 
+
+	def reset_modes(self, fields, particles):
+
+		sigma_x = np.std(particles.x)
+		sigma_y = np.std(particles.y)
+		#fields.L_y = 
+
 		return
 
 

@@ -9,18 +9,23 @@ class particle_dumper:
     
         self.fn = file_name
         self.hf = h5.File(self.fn, 'w')
+        self.index = 0
 
-    def dump(self, step, particles):
-        data_set_name = 'step_' + str(step)
+    def dump(self, particles, s):
+        index = self.index
+        data_set_name = 'step_' + str(index).zfill(4)
 
         x = particles.x / 100.
         y = particles.y / 100.
         xp = particles.px / particles.pz
         yp = particles.py / particles.pz
-        
-        array_data = np.column_stack([x, xp, y, yp])
+        s_array = s + np.zeros(len(x))
+
+        array_data = np.column_stack([x, xp, y, yp, s_array])
         
         self.hf.create_dataset(data_set_name, data = array_data)
+        
+        self.index += 1
         return
 
     def close(self):
