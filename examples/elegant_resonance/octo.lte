@@ -1,0 +1,21 @@
+
+
+!##################
+!Toy lattice for respic
+!##################
+
+
+
+
+D1: DRIF, L = 0.8
+DRIFT1: LINE = (D1, D1 ,D1, D1, D1, D1, D1)
+
+B1: DRIF, L = 1.0
+DRIFT2: LINE = (D1, D1)
+
+
+Q1: QUAD, L=0.05, K1=-2.2
+Q2: QUAD, L=0.1, K1=2.2
+
+L1: LINE = (Q1, DRIFT1, Q2, DRIFT1, Q1) 
+
