@@ -1,4 +1,6 @@
 
+import numpy as np
+
 class octo_respic: 
     def __init__(self, s0 = 0):
         ## Drit defined in meters and converted to CM for respic
@@ -8,6 +10,14 @@ class octo_respic:
     def drift(self, maps, fields, particles, diagnostics, s, L = 0):
     
         maps.drift(particles, ds = L/2.)
+
+        sigma_x = np.std(particles.x)
+        sigma_y = np.std(particles.y)
+        L_x = 30. * sigma_x 
+        L_y = 30. * sigma_y
+        fields.reset_modes(L_x = L_x, L_y = L_y,
+        L_x_min = L_x/30., L_y_min = L_y/30.)
+        
         maps.space_charge_kick_2D(fields, particles, ds = L)
         maps.drift(particles, ds = L/2.)
         s += L
@@ -17,13 +27,12 @@ class octo_respic:
 
     def quad(self, maps, fields, particles, diagnostics, s, L = 0., k = 0):
 
-        maps.thin_quad(fields, particles, ds = L/4., kappa = k)
         s = self.drift(maps, fields, particles, diagnostics, s, L = L/4.)
-        maps.thin_quad(fields, particles, ds = L/4., kappa = k)
+        maps.thin_quad(fields, particles, ds = L/2., kappa = k)
         s = self.drift(maps, fields, particles, diagnostics, s, L = L/4.)
-        maps.thin_quad(fields, particles, ds = L/4., kappa = k)
+
         s = self.drift(maps, fields, particles, diagnostics, s, L = L/4.)
-        maps.thin_quad(fields, particles, ds = L/4., kappa = k)
+        maps.thin_quad(fields, particles, ds = L/2., kappa = k)
         s = self.drift(maps, fields, particles, diagnostics, s, L = L/4.)
 
         #s += L * 100.
@@ -31,36 +40,32 @@ class octo_respic:
         
         return s
 
-    def drift_1(self, maps, fields, particles, diagnostics, dumper, s):
+    def drift_1(self, maps, fields, particles, diagnostics, s, dumper = None):
         L_d1 = 0.5 # units of meters
-        L_d2 = 1.0 # units of meters
 
         s = self.drift(maps, fields, particles, diagnostics, s, L = L_d1 * 100.)
         s = self.drift(maps, fields, particles, diagnostics, s, L = L_d1 * 100.)
         s = self.drift(maps, fields, particles, diagnostics, s, L = L_d1 * 100.)
-        s = self.drift(maps, fields, particles, diagnostics, s, L = L_d2 / 2. * 100.)
-
-        dumper.dump(particles, s)
-
-        s = self.drift(maps, fields, particles, diagnostics, s, L = L_d2 / 2. * 100.)
         s = self.drift(maps, fields, particles, diagnostics, s, L = L_d1 * 100.)
         s = self.drift(maps, fields, particles, diagnostics, s, L = L_d1 * 100.)
-        
+        s = self.drift(maps, fields, particles, diagnostics, s, L = L_d1 * 100.)
+        s = self.drift(maps, fields, particles, diagnostics, s, L = L_d1 * 100.)
+    
         return s
 
 
-    def one_turn_map(self, maps, fields, particles, diagnostics, dumper s):
+    def one_turn_map(self, maps, fields, particles, diagnostics, s, dumper = None):
         L_quad = 0.1
 
-        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad / 2. * 100., k = 4.0)
+        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad / 2. * 100., k = 2.2)
 
-        s = self.drift_1(maps, fields, particles, diagnostics, dumper, s)
+        s = self.drift_1(maps, fields, particles, diagnostics, s, dumper = dumper)
 
-        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad * 100., k = -4.0)
+        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad * 100., k = -2.2)
         
-        s = self.drift_1(maps, fields, particles, diagnostics, dumper, s)
+        s = self.drift_1(maps, fields, particles, diagnostics, s, dumper = dumper)
         
-        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad / 2.* 100., k = 4.0)
+        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad / 2.* 100., k = 2.2)
 
         return s
 
