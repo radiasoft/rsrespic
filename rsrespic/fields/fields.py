@@ -90,6 +90,28 @@ class Field(object):
         #phi_amps = np.einsum('mn,mn->mn', phi, phi_modes)
 
 
+class sin_transform_2D:
+
+    def __init__(self, L_x = 1.0, L_y = 1.0, n_modes_x = 10., n_modes_y = 10.):
+
+        """ Input data from the user for the field solver """
+
+        self.L_x = L_y * 2.
+        self.L_y = L_x * 2.
+        self.n_modes_x = n_modes_x
+        self.n_modes_y = n_modes_y
+
+        self.phi = 0.0
+        self.Ax = 0.0 
+        self.Ay = 0.0
+        self.Az = 0.0
+
+    def register_solver(self,field_solver):
+
+        self.solver = field_solver
+
+        return
+
 
 class cartesian_2D:
 

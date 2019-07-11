@@ -11,12 +11,12 @@ class octo_respic:
     
         maps.drift(particles, ds = L/2.)
 
-        sigma_x = np.std(particles.x)
-        sigma_y = np.std(particles.y)
-        L_x = 30. * sigma_x 
-        L_y = 30. * sigma_y
-        fields.reset_modes(L_x = L_x, L_y = L_y,
-        L_x_min = L_x/30., L_y_min = L_y/30.)
+        #sigma_x = np.std(particles.x)
+        #sigma_y = np.std(particles.y)
+        #L_x = 30. * sigma_x 
+        #L_y = 30. * sigma_y
+        #fields.reset_modes(L_x = L_x, L_y = L_y,
+        #L_x_min = L_x/30., L_y_min = L_y/30.)
         
         maps.space_charge_kick_2D(fields, particles, ds = L)
         maps.drift(particles, ds = L/2.)
@@ -57,15 +57,15 @@ class octo_respic:
     def one_turn_map(self, maps, fields, particles, diagnostics, s, dumper = None):
         L_quad = 0.1
 
-        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad / 2. * 100., k = 2.2)
+        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad / 2. * 100., k = 0.5)
 
         s = self.drift_1(maps, fields, particles, diagnostics, s, dumper = dumper)
 
-        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad * 100., k = -2.2)
+        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad * 100., k = -0.5)
         
         s = self.drift_1(maps, fields, particles, diagnostics, s, dumper = dumper)
         
-        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad / 2.* 100., k = 2.2)
+        s = self.quad(maps, fields, particles, diagnostics, s, L = L_quad / 2.* 100., k = 0.5)
 
         return s
 

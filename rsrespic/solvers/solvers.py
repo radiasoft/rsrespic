@@ -10,6 +10,54 @@ c = constants.cgs_constants['c']
 
 ## Convert units to cgs from mks
 
+
+class sine_transform_2D(object):
+
+	def __init__(self):
+
+		self.name = '2-d electrostatic solver using sin transform'
+
+
+	def compute_grad_psi(self, fields, particles):
+
+
+		kappa_1 = particles.bunch_charge / particles.N
+
+		M = fields.n_modes_x
+		N = fields.n_modes_y
+		Lx = fields.L_x
+		Ly = fields.L_y
+		
+		## shift the particles into the domain for computing the fiels
+		x = particles.x + Lx / 2.
+		y = particles.y + Ly / 2.
+
+		arr_x = np.exp(1.j *np.pi *x /Lx) 
+		arr_y = np.exp(1.j *np.pi *y /Ly) 
+
+		E_x = 0.0 *x  # field components at the locations of the particles 
+		E_y = 0.0 *y 
+
+		for i_m in np.arange(M): 
+			m = i_m +1 
+			tmp_x = arr_x**m 
+			tx_r = np.real(tmp_x) 
+			tx_i = np.imag(tmp_x) 
+			for i_n in np.arange(N): 
+				n = i_n +1 
+				tmp_y = arr_y**n 
+				ty_r = np.real(tmp_y) 
+				ty_i = np.imag(tmp_y) 
+				c_mn_rho = np.sum(tx_i  *ty_i) 
+				c_mn_rho *= 4./ (Lx *Ly) 
+				c_mn_phi = 4. *np.pi * kappa_1 *c_mn_rho / ( (m*np.pi/Lx)*(m*np.pi/Lx) +(n*np.pi/Ly)*(n*np.pi/Ly) )  # "-" from the Laplacian, "-" from the -4pi in the rhs 
+				E_x -= (m*np.pi/Lx) *c_mn_phi *tx_r *ty_i  #  *np.cos(m *np.pi *x[ix] /Lx) *np.sin(n *np.pi *y[iy] /Ly)  # -d/dx 
+				E_y -= (n*np.pi/Ly) *c_mn_phi *tx_i *ty_r  #  *np.sin(m *np.pi *x[ix] /Lx) *np.cos(n *np.pi *y[iy] /Ly)  # -d/dy
+		
+		fields.psi_x = E_x / (particles.gamma ** 2.)  ## statC^2 s^2 / cm^3  
+		fields.psi_y = E_y / (particles.gamma ** 2.) ## statC^2 s^2 / cm^3  
+
+
 class field_solver_2D(object):
 
 	def __init__(self):
@@ -132,6 +180,22 @@ class symplectic_maps:
 	def __init__(self, name = 'maps'):
 
 		self.name = name 
+
+	def space_charge_kick_2D_sine(self, fields, particles, ds = 0.0):
+
+		## compute the fields from the particles using the sin transform
+		fields.solver.compute_grad_psi(fields, particles)
+
+		## compute the kick 
+		kick_x = fields.psi_x * particles.charge  * particles.weight / (particles.beta * c)  ## statC^2 s^2 / cm^3 
+		kick_y = fields.psi_y * particles.charge  * particles.weight / (particles.beta * c)  ## statC^2 s^2 / cm^3 
+
+		## apply the kick 
+		particles.px = particles.px + kick_x * ds ##statC^2 s^2 / cm^2 --> This should be statC^2 s / cm^2
+		particles.py = particles.py + kick_y * ds ##statC^2 s^2 / cm^2
+		particles.pt = particles.pt +  0. 
+
+
 
 	def space_charge_kick_2D(self, fields, particles, ds = 0.0):
 		
