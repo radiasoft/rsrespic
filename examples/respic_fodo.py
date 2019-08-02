@@ -1,6 +1,46 @@
 
 import numpy as np
 
+
+class uniform_focusing_channel:
+
+    def __init__(self, s0 = 0, k = 0, L = 0):
+
+        self.s0 = s0
+        self.k = k
+        self.L = L
+
+    def thin_quad(self, particles, ds):
+        kappa = self.k
+
+        ## Thin quad has no drift 
+        dx_ds = 0.
+        dy_ds = 0.
+        dz_ds = 0.
+
+        ## assume a positron convention here kappa is the same as elegant K1
+        dpx = -kappa * particles.x * ds * (particles.pz / 10000.)
+        dpy = -kappa * particles.y * ds * (particles.pz / 10000.)
+        dpz = 0.
+
+        particles.px += dpx
+        particles.py += dpy
+        particles.pt += 0. 
+
+    def one_turn_map(self, maps, fields, particles, diagnostics, s, dumper = None):
+       
+        maps.drift(particles, ds = self.L/2.)
+        self.thin_quad(particles, ds = self.L/2.)
+        maps.space_charge_kick_2D_sine(fields, particles, ds = self.L)
+        self.thin_quad(particles, ds = self.L/2.)
+        maps.drift(particles, ds = self.L/2.)
+        s += self.L
+        diagnostics.update(s, particles)
+
+        return s
+
+
+
 class octo_respic: 
     def __init__(self, s0 = 0):
         ## Drit defined in meters and converted to CM for respic

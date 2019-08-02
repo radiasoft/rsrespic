@@ -251,6 +251,8 @@ class symplectic_maps:
 		particles.pt += 0. 
 
 
+
+
 	def reset_modes(self, fields, particles):
 
 		sigma_x = np.std(particles.x)
