@@ -9,15 +9,6 @@ import os
 import scipy.integrate as sint
 import subprocess
 
-## respic imports 
-import constants
-
-
-q = constants.cgs_constants['q']
-c = constants.cgs_constants['c']
-m_e = constants.cgs_constants['m_e']
-m_p = constants.cgs_constants['m_p']
-
 
 def compute_system_energy(particles, fields):
     

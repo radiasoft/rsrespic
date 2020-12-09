@@ -104,7 +104,7 @@ class bunch_statistics:
             self.nuy = 1. / (2. * np.pi) * phi_y
 
         except:
-            print 'something went wrong, check that you have run a simulation first'
+             print('something went wrong, check that you have run a simulation first')
 
         return
 

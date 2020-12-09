@@ -116,14 +116,14 @@ class distribution:
         # in this function 
 
         if fn == None:
-            print 'error, no file name'
+            print('error, no file name')
 
         else:
 
             bunch_data = np.loadtxt(fn, delimiter = ',')
             row, col = bunch_data.shape
             if col != 4:
-                print 'error, wrong file format'
+                print('error, wrong file format')
 
             else:
                 self.x = bunch_data[:,0] * 100.
