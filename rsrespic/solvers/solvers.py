@@ -3,6 +3,8 @@ import numpy as np
 from rsrespic.utilities import constants 
 from numpy import exp, sin, einsum
 
+import numba
+
 pi = np.pi
 q = constants.cgs_constants['q']
 c = constants.cgs_constants['c'] 
@@ -17,7 +19,7 @@ class sine_transform_2D(object):
 
 		self.name = '2-d electrostatic solver using sin transform'
 
-
+	@numba.jit
 	def compute_grad_psi(self, fields, particles):
 
 
@@ -193,7 +195,6 @@ class symplectic_maps:
 		## apply the kick 
 		particles.px = particles.px + kick_x * ds ##statC^2 s^2 / cm^2 --> This should be statC^2 s / cm^2
 		particles.py = particles.py + kick_y * ds ##statC^2 s^2 / cm^2
-		particles.pt = particles.pt +  0. 
 
 
 
@@ -212,7 +213,6 @@ class symplectic_maps:
 		## apply the kick 
 		particles.px = particles.px + kick_x * ds ##statC^2 s^2 / cm^2 --> This should be statC^2 s / cm^2
 		particles.py = particles.py + kick_y * ds ##statC^2 s^2 / cm^2
-		particles.pt = particles.pt +  0. 
 
 		#return fields, particles
 
@@ -222,15 +222,9 @@ class symplectic_maps:
 		argument = np.sqrt( (particles.beta * particles.p_xi) **2 - particles.px **2 
 			- particles.py**2 - (particles.m_0 * particles.weight * c)**2)
 
-		## compute the rate of drift per s 
-		dx_ds = particles.px / argument 
-		dy_ds = particles.py / argument
-		dz_ds = 0.
-
 		## update particle positoins 
 		particles.x = particles.x + particles.px / argument * ds
 		particles.y = particles.y + particles.py / argument * ds
-		particles.z = particles.z + 0
 
 
 
@@ -244,11 +238,9 @@ class symplectic_maps:
 		## assume a positron convention here kappa is the same as elegant K1
 		dpx = kappa * particles.x * ds * (particles.pz / 10000.)
 		dpy = - kappa * particles.y * ds * (particles.pz / 10000.)
-		dpz = 0.
 
 		particles.px += dpx
 		particles.py += dpy
-		particles.pt += 0. 
 
 
 
